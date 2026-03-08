@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Live2D SDK Setup</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  background: #18181b;
+  color: #e4e4e7;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.titlebar {
+  -webkit-app-region: drag;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 32px;
+}
+.container {
+  max-width: 520px;
+  padding: 40px;
+  text-align: center;
+}
+h1 {
+  font-size: 22px;
+  margin-bottom: 8px;
+  color: #fff;
+}
+.subtitle {
+  font-size: 13px;
+  color: #888;
+  margin-bottom: 28px;
+}
+.steps {
+  text-align: left;
+  margin-bottom: 28px;
+}
+.step {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+  align-items: flex-start;
+}
+.step-num {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(99, 102, 241, 0.12);
+  color: #818cf8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+.step-text {
+  font-size: 14px;
+  line-height: 1.5;
+  padding-top: 3px;
+}
+.step-text a {
+  color: #818cf8;
+  text-decoration: none;
+}
+.step-text a:hover { text-decoration: underline; }
+.btn-download {
+  display: inline-block;
+  background: #6366f1;
+  color: #fafafa;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  margin-bottom: 24px;
+  transition: background 0.2s;
+}
+.btn-download:hover { background: #818cf8; }
+.dropzone {
+  border: 2px dashed #3f3f46;
+  border-radius: 12px;
+  padding: 32px 20px;
+  margin-bottom: 20px;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+.dropzone.dragover {
+  border-color: #818cf8;
+  background: rgba(99, 102, 241, 0.08);
+}
+.dropzone-text {
+  font-size: 14px;
+  color: #a1a1aa;
+}
+.dropzone-hint {
+  font-size: 12px;
+  color: #71717a;
+  margin-top: 8px;
+}
+.status {
+  font-size: 13px;
+  min-height: 20px;
+  margin-bottom: 12px;
+}
+.status.error { color: #ff6b6b; }
+.status.success { color: #51cf66; }
+.btn-skip {
+  background: none;
+  border: none;
+  color: #71717a;
+  font-size: 12px;
+  cursor: pointer;
+  text-decoration: underline;
+}
+.btn-skip:hover { color: #a1a1aa; }
+.dont-show {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 12px;
+  font-size: 12px;
+  color: #71717a;
+}
+.dont-show input[type="checkbox"] {
+  accent-color: #6366f1;
+}
+</style>
+</head>
+<body>
+<div class="titlebar"></div>
+<div class="container">
+  <h1>Live2D Cubism SDK Setup</h1>
+  <p class="subtitle">Live2D Cubism Core is required to display Live2D models.<br>Due to licensing, it must be downloaded from the official site.</p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-text">Download the <strong>Cubism SDK for Web</strong> from the official page (free, requires license agreement)</div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-text">Drop the downloaded <strong>.zip file</strong> (or <strong>live2dcubismcore.min.js</strong>) below</div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-text">ELINO will extract and place the required files automatically</div>
+    </div>
+  </div>
+
+  <button class="btn-download" id="btnDownload">Open Official Download Page</button>
+
+  <div class="dropzone" id="dropzone">
+    <div class="dropzone-text">Drop .zip or .js file here</div>
+    <div class="dropzone-hint">or click to select</div>
+  </div>
+
+  <div class="status" id="status"></div>
+
+  <button class="btn-skip" id="btnSkip">Skip (VRM models only)</button>
+  <label class="dont-show">
+    <input type="checkbox" id="dontShowAgain">
+    Don't show this again
+  </label>
+</div>
+
+<script>
+const api = window.electronAPI;
+
+document.getElementById('btnDownload').addEventListener('click', () => {
+  api.sdkSetupOpenDownload();
+});
+
+document.getElementById('btnSkip').addEventListener('click', () => {
+  const dontShow = document.getElementById('dontShowAgain').checked;
+  api.sdkSetupSkip(dontShow);
+});
+
+const dropzone = document.getElementById('dropzone');
+
+// Click to open file dialog via main process
+dropzone.addEventListener('click', () => {
+  api.sdkSetupSelectFile();
+});
+
+// Drag and drop
+dropzone.addEventListener('dragover', (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  dropzone.classList.add('dragover');
+});
+
+dropzone.addEventListener('dragleave', (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  dropzone.classList.remove('dragover');
+});
+
+dropzone.addEventListener('drop', async (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  dropzone.classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (!file) return;
+  // With contextIsolation: true, file.path is not available
+  // Read file via FileReader and send ArrayBuffer to main process
+  const reader = new FileReader();
+  reader.onload = () => {
+    const arrayBuffer = reader.result;
+    api.sdkSetupDropBuffer({ name: file.name, buffer: new Uint8Array(arrayBuffer) });
+  };
+  reader.onerror = () => {
+    showStatus('Could not read file. Please click to select instead.', 'error');
+  };
+  reader.readAsArrayBuffer(file);
+});
+
+function handleFile(filePath) {
+  const ext = filePath.split('.').pop().toLowerCase();
+  if (ext === 'zip') {
+    showStatus('Extracting...', '');
+    api.sdkSetupExtract(filePath);
+  } else if (ext === 'js') {
+    showStatus('Copying file...', '');
+    api.sdkSetupCopyJs(filePath);
+  } else {
+    showStatus('Please select a .zip or .js file', 'error');
+  }
+}
+
+function showStatus(text, type) {
+  const status = document.getElementById('status');
+  status.textContent = text;
+  status.className = 'status' + (type ? ' ' + type : '');
+}
+
+api.onSdkSetupResult((result) => {
+  if (result.success) {
+    showStatus('Setup complete! Starting ELINO...', 'success');
+  } else {
+    showStatus(result.error || 'Failed', 'error');
+  }
+});
+
+api.onSdkSetupFileSelected((filePath) => {
+  if (filePath) handleFile(filePath);
+});
+</script>
+</body>
+</html>

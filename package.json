@@ -1,0 +1,91 @@
+{
+  "name": "elino",
+  "version": "0.1.0",
+  "description": "A desktop AI companion with Live2D and VRM support",
+  "main": "main.cjs",
+  "scripts": {
+    "dev": "concurrently \"vite\" \"wait-on http://localhost:5173 && cross-env NODE_ENV=development electron .\"",
+    "build": "node scripts/build-main.js && vite build",
+    "start": "electron .",
+    "pack": "electron-builder"
+  },
+  "keywords": [
+    "electron",
+    "live2d",
+    "ai"
+  ],
+  "author": "Tacky7788",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Tacky7788/elino.git"
+  },
+  "homepage": "https://github.com/Tacky7788/elino#readme",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "@types/three": "^0.182.0",
+    "concurrently": "^9.2.1",
+    "cross-env": "^7.0.3",
+    "electron": "^33.3.1",
+    "electron-builder": "^25.1.8",
+    "typescript": "^5.7.3",
+    "vite": "^6.0.11",
+    "wait-on": "^8.0.5"
+  },
+  "dependencies": {
+    "@ai-sdk/anthropic": "^3.0.41",
+    "@ai-sdk/deepseek": "^2.0.19",
+    "@ai-sdk/google": "^3.0.24",
+    "@ai-sdk/groq": "^3.0.22",
+    "@ai-sdk/openai": "^3.0.26",
+    "@huggingface/transformers": "^3.8.1",
+    "@pixi/core": "^7.4.3",
+    "@pixi/display": "^7.4.3",
+    "@pixi/filter-advanced-bloom": "^5.1.1",
+    "@pixi/filter-glow": "^5.2.1",
+    "@pixi/sprite": "^7.4.3",
+    "@pixiv/three-vrm": "^3.4.5",
+    "ai": "^6.0.79",
+    "electron-store": "^8.2.0",
+    "google-auth-library": "^10.5.0",
+    "minisearch": "^7.2.0",
+    "node-osc": "^11.2.2",
+    "pdf-parse": "^2.4.5",
+    "pixi-live2d-display": "^0.5.0-beta",
+    "pixi.js": "^7.3.2",
+    "three": "^0.182.0",
+    "ws": "^8.19.0",
+    "yauzl": "^3.2.0"
+  },
+  "build": {
+    "appId": "com.elino.desktop-companion",
+    "productName": "Desktop Companion",
+    "directories": {
+      "output": "release"
+    },
+    "win": {
+      "target": "nsis"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    },
+    "files": [
+      "dist/**/*",
+      "main.cjs",
+      "preload.cjs",
+      "public/**/*",
+      "src/core/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "public/live2d",
+        "to": "live2d"
+      },
+      {
+        "from": "public/lib",
+        "to": "lib"
+      }
+    ]
+  }
+}

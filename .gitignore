@@ -1,0 +1,43 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+release/
+
+# Environment & secrets
+.env
+.env.local
+
+# App logs
+app-log.txt
+.env.production
+config.json
+
+# User data (AppData)
+companion/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Live2D SDK (proprietary, must be obtained separately)
+public/lib/live2dcubismcore.min.js
+public/lib/_tmp_sdk.zip
+
+# Model files (user must provide their own)
+public/live2d/models/
+*.vrm
+*.moc3
+
+# Temp / artifacts
+nul
+*.log
+C:*

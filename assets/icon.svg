@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <!-- Background: deep navy -->
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0f0b2e"/>
+      <stop offset="100%" stop-color="#1a1145"/>
+    </linearGradient>
+    <!-- Main accent: pastel lavender → mint -->
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#c4b5fd"/>
+      <stop offset="100%" stop-color="#86efac"/>
+    </linearGradient>
+    <!-- Subtle inner glow -->
+    <radialGradient id="innerGlow" cx="50%" cy="40%" r="50%">
+      <stop offset="0%" stop-color="#a78bfa" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#a78bfa" stop-opacity="0"/>
+    </radialGradient>
+    <!-- Ring glow -->
+    <filter id="ringGlow">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <!-- Dot glow -->
+    <filter id="dotGlow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="512" height="512" rx="108" fill="url(#bg)"/>
+  <rect width="512" height="512" rx="108" fill="url(#innerGlow)"/>
+
+  <!-- Subtle grid lines -->
+  <line x1="256" y1="60" x2="256" y2="452" stroke="#a78bfa" stroke-width="0.5" opacity="0.06"/>
+  <line x1="60" y1="256" x2="452" y2="256" stroke="#a78bfa" stroke-width="0.5" opacity="0.06"/>
+
+  <!-- Outer orbit ring -->
+  <circle cx="256" cy="256" r="168" fill="none" stroke="url(#accent)" stroke-width="1.2" opacity="0.15" stroke-dasharray="4 8"/>
+
+  <!-- Main circle ring — the "soul container" -->
+  <circle cx="256" cy="256" r="120" fill="none" stroke="url(#accent)" stroke-width="2.5" opacity="0.6" filter="url(#ringGlow)"/>
+
+  <!-- Inner subtle ring -->
+  <circle cx="256" cy="256" r="88" fill="none" stroke="#c4b5fd" stroke-width="0.8" opacity="0.2"/>
+
+  <!-- Core symbol: stylized "e" as a circuit/companion mark -->
+  <!-- The "e" is constructed from a broken circle + horizontal bar -->
+  <path d="
+    M296 232
+    A56 56 0 1 0 220 296
+    L296 296
+  " fill="none" stroke="url(#accent)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>
+
+  <!-- Horizontal bar of "e" -->
+  <line x1="204" y1="252" x2="308" y2="252" stroke="url(#accent)" stroke-width="5" stroke-linecap="round" opacity="0.9"/>
+
+  <!-- Orbital dot — top (mint) -->
+  <circle cx="256" cy="88" r="6" fill="#86efac" filter="url(#dotGlow)" opacity="0.9"/>
+
+  <!-- Orbital dot — right (lavender) -->
+  <circle cx="400" cy="300" r="4.5" fill="#c4b5fd" filter="url(#dotGlow)" opacity="0.7"/>
+
+  <!-- Orbital dot — bottom-left (peach) -->
+  <circle cx="130" cy="380" r="3.5" fill="#fda4af" filter="url(#dotGlow)" opacity="0.6"/>
+
+  <!-- Small accent dots -->
+  <circle cx="370" cy="140" r="2" fill="#c4b5fd" opacity="0.4"/>
+  <circle cx="110" cy="180" r="1.5" fill="#86efac" opacity="0.3"/>
+  <circle cx="400" cy="400" r="1.5" fill="#fda4af" opacity="0.25"/>
+
+  <!-- "ELINO" text below symbol -->
+  <text x="256" y="430" text-anchor="middle" font-family="'SF Mono', 'JetBrains Mono', 'Fira Code', monospace" font-size="28" font-weight="300" letter-spacing="12" fill="url(#accent)" opacity="0.7">ELINO</text>
+</svg>

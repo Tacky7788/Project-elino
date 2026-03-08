@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Character</title>
+  <!-- Cubism Core (Local) -->
+  <script src="/lib/live2dcubismcore.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      width: 100%;
+      height: 100%;
+      background: transparent;
+      overflow: hidden;
+      cursor: pointer;
+      -webkit-app-region: drag; /* ドラッグ移動可能 */
+    }
+    html {
+      width: 100%;
+      height: 100%;
+    }
+    #live2d-container {
+      width: 100%;
+      height: 100%;
+      position: relative;
+    }
+    #live2d-canvas {
+      width: 100%;
+      height: 100%;
+    }
+    #subtitle-container {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      text-align: center;
+      padding: 8px 12px;
+      pointer-events: none;
+      z-index: 10;
+    }
+    #subtitle-text {
+      display: inline-block;
+      font-family: 'Segoe UI', 'Yu Gothic UI', 'Hiragino Kaku Gothic ProN', sans-serif;
+      font-size: 28px;
+      font-weight: bold;
+      color: #ffffff;
+      text-shadow:
+        -2px -2px 0 #000,
+         2px -2px 0 #000,
+        -2px  2px 0 #000,
+         2px  2px 0 #000,
+         0    2px 0 #000,
+         0   -2px 0 #000,
+         2px  0   0 #000,
+        -2px  0   0 #000;
+      line-height: 1.3;
+      max-width: 100%;
+      word-wrap: break-word;
+      opacity: 1;
+      transition: opacity 0.5s ease;
+    }
+    #subtitle-text.fading {
+      opacity: 0;
+    }
+    #model-error-overlay {
+      display: none;
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.75);
+      color: #fff;
+      font-family: 'Segoe UI', 'Yu Gothic UI', sans-serif;
+      font-size: 13px;
+      padding: 16px;
+      text-align: center;
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 8px;
+    }
+    #model-error-overlay.visible {
+      display: flex;
+    }
+    #model-error-overlay .error-icon {
+      font-size: 32px;
+    }
+    #model-error-overlay .error-msg {
+      word-break: break-all;
+      max-width: 280px;
+      line-height: 1.4;
+    }
+  </style>
+</head>
+<body>
+  <div id="live2d-container">
+    <canvas id="live2d-canvas"></canvas>
+  </div>
+  <div id="model-error-overlay">
+    <div class="error-icon">&#x26A0;</div>
+    <div class="error-msg" id="model-error-msg" data-i18n="character.error.loadFailed">モデルの読み込みに失敗しました</div>
+  </div>
+  <div id="subtitle-container" style="display:none;">
+    <div id="subtitle-text"></div>
+  </div>
+  <script type="module" src="character.ts"></script>
+</body>
+</html>

@@ -1,0 +1,3183 @@
+<!DOCTYPE html>
+<html lang="ja" data-theme="dark">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>設定</title>
+  <style>
+    /* ========== CSS Variables (Theme System) ========== */
+    :root[data-theme="dark"] {
+      --bg-primary: #18181b;
+      --bg-secondary: #1e1e22;
+      --bg-sidebar: #141417;
+      --bg-input: #26262b;
+      --bg-input-hover: #2e2e34;
+      --bg-section: #1e1e22;
+      --text-primary: #e4e4e7;
+      --text-secondary: #a1a1aa;
+      --text-muted: #71717a;
+      --accent: #818cf8;
+      --accent-hover: #a5b4fc;
+      --accent-press: #6366f1;
+      --accent-subtle: rgba(99, 102, 241, 0.10);
+      --border: #2a2a30;
+      --border-focus: #818cf8;
+      --danger: #f47070;
+      --danger-bg: rgba(244, 112, 112, 0.1);
+      --success: #4caf50;
+      --success-bg: rgba(76, 175, 80, 0.1);
+      --error-bg: rgba(244, 67, 54, 0.1);
+      --shadow: rgba(0, 0, 0, 0.5);
+      --sidebar-active-bg: rgba(99, 102, 241, 0.12);
+      --sidebar-active-border: #818cf8;
+      --scrollbar-thumb: #3f3f46;
+      --scrollbar-track: transparent;
+    }
+
+    :root[data-theme="light"] {
+      --bg-primary: #f8f9fa;
+      --bg-secondary: #ffffff;
+      --bg-sidebar: #f1f3f5;
+      --bg-input: #ffffff;
+      --bg-input-hover: #f8f9fa;
+      --bg-section: #ffffff;
+      --text-primary: #1a1a2e;
+      --text-secondary: #5a6478;
+      --text-muted: #8892a8;
+      --accent: #6366f1;
+      --accent-hover: #818cf8;
+      --accent-press: #4f46e5;
+      --accent-subtle: rgba(99, 102, 241, 0.08);
+      --border: #e0e4ec;
+      --border-focus: #6366f1;
+      --danger: #d32f2f;
+      --danger-bg: rgba(211, 47, 47, 0.06);
+      --success: #2e7d32;
+      --success-bg: rgba(46, 125, 50, 0.06);
+      --error-bg: rgba(211, 47, 47, 0.06);
+      --shadow: rgba(0, 0, 0, 0.08);
+      --sidebar-active-bg: rgba(99, 102, 241, 0.1);
+      --sidebar-active-border: #6366f1;
+      --scrollbar-thumb: #d0d4dc;
+      --scrollbar-track: transparent;
+    }
+
+    @media (prefers-color-scheme: light) {
+      :root[data-theme="system"] {
+        --bg-primary: #f8f9fa;
+        --bg-secondary: #ffffff;
+        --bg-sidebar: #f1f3f5;
+        --bg-input: #ffffff;
+        --bg-input-hover: #f8f9fa;
+        --bg-section: #ffffff;
+        --text-primary: #1a1a2e;
+        --text-secondary: #5a6478;
+        --text-muted: #8892a8;
+        --accent: #6366f1;
+        --accent-hover: #818cf8;
+        --accent-press: #4f46e5;
+        --accent-subtle: rgba(99, 102, 241, 0.08);
+        --border: #e0e4ec;
+        --border-focus: #6366f1;
+        --danger: #d32f2f;
+        --danger-bg: rgba(211, 47, 47, 0.06);
+        --success: #2e7d32;
+        --success-bg: rgba(46, 125, 50, 0.06);
+        --error-bg: rgba(211, 47, 47, 0.06);
+        --shadow: rgba(0, 0, 0, 0.08);
+        --sidebar-active-bg: rgba(99, 102, 241, 0.1);
+        --sidebar-active-border: #6366f1;
+        --scrollbar-thumb: #d0d4dc;
+        --scrollbar-track: transparent;
+      }
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root[data-theme="system"] {
+        --bg-primary: #18181b;
+        --bg-secondary: #1e1e22;
+        --bg-sidebar: #141417;
+        --bg-input: #26262b;
+        --bg-input-hover: #2e2e34;
+        --bg-section: #1e1e22;
+        --text-primary: #e4e4e7;
+        --text-secondary: #a1a1aa;
+        --text-muted: #71717a;
+        --accent: #818cf8;
+        --accent-hover: #a5b4fc;
+        --accent-press: #6366f1;
+        --accent-subtle: rgba(99, 102, 241, 0.10);
+        --border: #2a2a30;
+        --border-focus: #818cf8;
+        --danger: #f47070;
+        --danger-bg: rgba(244, 112, 112, 0.1);
+        --success: #4caf50;
+        --success-bg: rgba(76, 175, 80, 0.1);
+        --error-bg: rgba(244, 67, 54, 0.1);
+        --shadow: rgba(0, 0, 0, 0.5);
+        --sidebar-active-bg: rgba(99, 102, 241, 0.12);
+        --sidebar-active-border: #818cf8;
+        --scrollbar-thumb: #3f3f46;
+        --scrollbar-track: transparent;
+      }
+    }
+
+    /* ========== Reset & Base ========== */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--scrollbar-track); }
+    ::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+    /* ========== Layout: Sidebar + Content ========== */
+    .settings-layout {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* ========== Sidebar ========== */
+    .sidebar {
+      width: 180px;
+      min-width: 180px;
+      background: var(--bg-sidebar);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      padding: 16px 0;
+      overflow-y: auto;
+    }
+
+    .sidebar-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      padding: 0 20px;
+      margin-bottom: 16px;
+    }
+
+    .sidebar-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      padding: 0 8px;
+    }
+
+    .sidebar-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border: none;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: left;
+      border-left: 3px solid transparent;
+    }
+
+    .sidebar-btn:hover {
+      background: var(--accent-subtle);
+      color: var(--text-primary);
+      transform: translateX(2px);
+    }
+
+    .sidebar-btn.active {
+      background: var(--sidebar-active-bg);
+      color: var(--accent);
+      border-left-color: var(--sidebar-active-border);
+      font-weight: 600;
+    }
+
+    .sidebar-icon {
+      width: 20px;
+      height: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .sidebar-icon svg {
+      display: block;
+    }
+
+    /* ========== Content Area ========== */
+    .content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px 32px;
+    }
+
+    .content-header {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 24px;
+      color: var(--text-primary);
+      letter-spacing: -0.3px;
+    }
+
+    /* ========== Sections ========== */
+    .section {
+      background: var(--bg-section);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 20px;
+      transition: border-color 0.2s ease;
+    }
+
+    .section:hover {
+      border-color: color-mix(in srgb, var(--border) 50%, var(--accent) 15%);
+    }
+
+    .section-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 18px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .section-divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 20px 0;
+    }
+
+    /* ========== Form Elements ========== */
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group:last-child {
+      margin-bottom: 0;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    input[type="password"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 10px 14px;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text-primary);
+      font-size: 13px;
+      font-family: inherit;
+      transition: all 0.2s ease;
+    }
+
+    select {
+      cursor: pointer;
+    }
+
+    input[type="text"]:hover,
+    input[type="number"]:hover,
+    input[type="password"]:hover,
+    select:hover,
+    textarea:hover {
+      background: var(--bg-input-hover);
+    }
+
+    input[type="text"]:focus,
+    input[type="number"]:focus,
+    input[type="password"]:focus,
+    select:focus,
+    textarea:focus {
+      outline: none;
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px var(--accent-subtle);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    /* Range slider */
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: calc(100% - 90px);
+      height: 6px;
+      background: var(--border);
+      border-radius: 3px;
+      outline: none;
+      display: inline-block;
+      vertical-align: middle;
+      transition: background 0.2s ease;
+    }
+
+    input[type="range"]:hover {
+      background: var(--bg-input-hover);
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+      border: 2px solid var(--bg-primary);
+      box-shadow: 0 2px 8px rgba(91, 184, 245, 0.25);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+      box-shadow: 0 2px 12px rgba(91, 184, 245, 0.4);
+    }
+
+    input[type="range"]::-webkit-slider-thumb:active {
+      transform: scale(0.95);
+      box-shadow: 0 1px 4px rgba(91, 184, 245, 0.2);
+    }
+
+    input[type="range"]:focus::-webkit-slider-thumb {
+      box-shadow: 0 0 0 3px var(--accent-subtle), 0 2px 8px rgba(91, 184, 245, 0.25);
+    }
+
+    .range-num {
+      width: 76px;
+      display: inline-block;
+      margin-left: 8px;
+      padding: 5px 8px;
+      vertical-align: middle;
+      text-align: center;
+      border-radius: 6px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Checkbox */
+    input[type="checkbox"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border: 2px solid var(--border);
+      border-radius: 5px;
+      background: var(--bg-input);
+      vertical-align: middle;
+      margin-right: 8px;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.15s ease;
+    }
+
+    input[type="checkbox"]:hover {
+      border-color: var(--accent);
+      background: var(--bg-input-hover);
+    }
+
+    input[type="checkbox"]:checked {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+
+    input[type="checkbox"]:checked::after {
+      content: '';
+      position: absolute;
+      left: 4px;
+      top: 1px;
+      width: 6px;
+      height: 10px;
+      border: solid #fff;
+      border-width: 0 2px 2px 0;
+      transform: rotate(45deg);
+    }
+
+    input[type="checkbox"]:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 3px var(--accent-subtle);
+    }
+
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--text-primary);
+      transition: color 0.15s ease;
+    }
+
+    .checkbox-label:hover {
+      color: var(--accent);
+    }
+
+    /* ========== Hint Text ========== */
+    .hint {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 4px;
+      line-height: 1.5;
+    }
+
+    /* ========== Buttons ========== */
+    .btn {
+      padding: 8px 18px;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      font-family: inherit;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-hover);
+      box-shadow: 0 2px 12px rgba(91, 184, 245, 0.25);
+    }
+
+    .btn-primary:active {
+      background: var(--accent-press);
+      transform: translateY(1px);
+    }
+
+    .btn-secondary {
+      background: var(--bg-input);
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      background: var(--bg-input-hover);
+      border-color: var(--text-muted);
+    }
+    .get-key-btn {
+      white-space: nowrap;
+      padding: 4px 12px;
+      font-size: 12px;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+    }
+
+    .btn-danger {
+      background: var(--danger-bg);
+      color: var(--danger);
+      border: 1px solid transparent;
+    }
+
+    .btn-danger:hover {
+      border-color: var(--danger);
+    }
+
+    /* ========== Preset Tabs ========== */
+    .preset-tabs-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding-bottom: 4px;
+    }
+    .preset-tab {
+      padding: 6px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 0.82rem;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+    .preset-tab:hover {
+      border-color: var(--accent);
+      color: var(--text-primary);
+    }
+    .preset-tab.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+    .preset-tab-add {
+      padding: 6px 12px;
+      border-radius: 8px;
+      border: 1px dashed var(--border);
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .preset-tab-add:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    .preset-editor-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+      align-items: center;
+    }
+    .personality-advanced {
+      margin-top: 8px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 12px;
+    }
+    .personality-advanced summary {
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--text-secondary);
+      user-select: none;
+    }
+    .personality-advanced[open] summary {
+      margin-bottom: 8px;
+    }
+    .reactions-group .reaction-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+    .reactions-group .reaction-label {
+      min-width: 40px;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+    .reactions-group .reaction-row input {
+      flex: 1;
+    }
+
+    /* ========== Personality Mode Toggle ========== */
+    .personality-mode-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 0;
+      margin-bottom: 0.75rem;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: var(--bg-secondary);
+      height: 32px;
+    }
+    .mode-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      padding: 0 12px;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+      user-select: none;
+      white-space: nowrap;
+    }
+    .mode-label.active {
+      color: #fff;
+      background: var(--primary);
+    }
+    /* Toggle Switch (hidden, between labels) */
+    .toggle-switch {
+      position: relative;
+      display: flex;
+      align-items: center;
+      width: 36px;
+      height: 100%;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+      position: absolute;
+    }
+    .toggle-slider {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 32px;
+      height: 18px;
+      background-color: var(--border);
+      border-radius: 18px;
+      transition: background-color 0.25s ease;
+    }
+    .toggle-slider:before {
+      position: absolute;
+      content: "";
+      height: 14px;
+      width: 14px;
+      left: 2px;
+      top: 2px;
+      background-color: var(--text-secondary);
+      border-radius: 50%;
+      transition: transform 0.25s ease, background-color 0.25s ease;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    }
+    .toggle-switch input:checked + .toggle-slider {
+      background-color: var(--accent-subtle);
+    }
+    .toggle-switch input:checked + .toggle-slider:before {
+      transform: translateX(14px);
+      background-color: var(--accent);
+    }
+    #personality-free-edit {
+      font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+      font-size: 0.9rem;
+      line-height: 1.6;
+      tab-size: 2;
+    }
+
+    /* ========== Row Layout ========== */
+    .row {
+      display: flex;
+      gap: 16px;
+    }
+
+    .row .form-group {
+      flex: 1;
+    }
+
+    .inline-group {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .model-path-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .model-path-row input { flex: 1; }
+
+    /* ========== Footer ========== */
+    .footer {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+      padding: 16px 32px;
+      border-top: 1px solid var(--border);
+      background: var(--bg-sidebar);
+      backdrop-filter: blur(8px);
+    }
+
+    /* ========== Status ========== */
+    .status {
+      margin-top: 12px;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 12px;
+      display: none;
+      border: 1px solid transparent;
+      animation: statusFadeIn 0.2s ease;
+    }
+
+    @keyframes statusFadeIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .status.success {
+      background: var(--success-bg);
+      color: var(--success);
+      border-color: rgba(76, 175, 80, 0.2);
+      display: block;
+    }
+
+    .status.error {
+      background: var(--error-bg);
+      color: var(--danger);
+      border-color: rgba(244, 112, 112, 0.2);
+      display: block;
+    }
+
+    /* ========== API Key Status Badge ========== */
+    .key-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      transition: all 0.2s ease;
+    }
+
+    .key-badge.set {
+      background: var(--success-bg);
+      color: var(--success);
+      border: 1px solid rgba(76, 175, 80, 0.2);
+    }
+
+    .key-badge.unset {
+      background: var(--error-bg);
+      color: var(--danger);
+      border: 1px solid rgba(244, 112, 112, 0.2);
+    }
+
+    .key-badge.env {
+      background: var(--accent-subtle);
+      color: var(--accent);
+      border: 1px solid rgba(91, 184, 245, 0.2);
+    }
+
+    /* ========== Tab Panels ========== */
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* ========== Card Grid (Home) ========== */
+    .settings-home {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      padding: 8px 0;
+    }
+
+    .settings-card {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 20px;
+      background: var(--bg-section);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-decoration: none;
+      color: inherit;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .settings-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 14px;
+      padding: 1px;
+      background: linear-gradient(135deg, transparent 60%, var(--accent) 100%);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .settings-card:hover {
+      background: var(--bg-input-hover);
+      border-color: var(--accent);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 20px rgba(74, 158, 255, 0.08);
+    }
+
+    .settings-card:hover::before {
+      opacity: 1;
+    }
+
+    .settings-card:active {
+      transform: translateY(0);
+    }
+
+    .settings-card-icon {
+      font-size: 28px;
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--accent-subtle);
+      border-radius: 12px;
+      flex-shrink: 0;
+    }
+
+    .settings-card-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .settings-card-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+
+    .settings-card-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    .settings-card-arrow {
+      color: var(--text-muted);
+      font-size: 16px;
+      opacity: 0;
+      transform: translateX(-4px);
+      transition: all 0.2s ease;
+    }
+
+    .settings-card:hover .settings-card-arrow {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    /* ========== Provider Card Grid ========== */
+    .provider-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .provider-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      padding: 16px 12px;
+      background: var(--bg-input);
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: center;
+    }
+
+    .provider-card:hover {
+      background: var(--bg-input-hover);
+      border-color: var(--text-muted);
+      transform: translateY(-1px);
+    }
+
+    .provider-card.active {
+      background: var(--accent-subtle);
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px var(--accent), 0 2px 12px rgba(91, 184, 245, 0.15);
+    }
+
+    .provider-card-logo {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      border-radius: 8px;
+    }
+
+    .provider-card-name {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-primary);
+      line-height: 1.2;
+    }
+
+    .provider-card-desc {
+      font-size: 10px;
+      color: var(--text-muted);
+      line-height: 1.3;
+    }
+
+    .provider-card.active .provider-card-name {
+      color: var(--accent);
+    }
+
+    /* ========== Breadcrumb ========== */
+    .breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .breadcrumb-back {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border: none;
+      border-radius: 8px;
+      background: var(--bg-input);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      font-size: 16px;
+    }
+
+    .breadcrumb-back:hover {
+      background: var(--accent-subtle);
+      color: var(--accent);
+    }
+
+    .breadcrumb-text {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .breadcrumb-current {
+      font-size: 12px;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    /* ========== Home/Detail mode ========== */
+    .settings-layout.home-mode .sidebar {
+      display: none;
+    }
+
+    .settings-layout.home-mode .content {
+      max-width: 720px;
+      margin: 0 auto;
+    }
+
+    /* ========== Toast ========== */
+    .toast {
+      position: fixed;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--accent);
+      color: #fff;
+      padding: 10px 24px;
+      border-radius: 10px;
+      font-size: 13px;
+      box-shadow: 0 4px 16px var(--shadow);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s, transform 0.3s;
+      z-index: 1000;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* ========== Modal Overlay ========== */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+    }
+
+    .modal-box {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      min-width: 350px;
+      max-width: 450px;
+      box-shadow: 0 8px 32px var(--shadow);
+    }
+
+    .modal-box h3 {
+      font-size: 16px;
+      margin-bottom: 16px;
+    }
+
+    .modal-box input {
+      margin-bottom: 16px;
+    }
+
+    .modal-buttons {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
+    code {
+      background: var(--bg-input);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+
+    .btn-primary.save-success {
+      background: var(--success);
+      transition: background 0.2s;
+    }
+
+    .btn-primary.save-success::before {
+      content: '✓ ';
+    }
+
+    /* ドラッグパッド */
+    .drag-pad-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+    .drag-pad-header label {
+      margin: 0;
+    }
+    .drag-pad-mode-toggle {
+      display: flex;
+      gap: 2px;
+      background: var(--bg-input);
+      border-radius: 6px;
+      padding: 2px;
+    }
+    .drag-pad-mode-btn {
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      padding: 3px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .drag-pad-mode-btn:hover {
+      color: var(--text);
+    }
+    .drag-pad-mode-btn.active {
+      background: var(--accent);
+      color: white;
+    }
+    .drag-pad-info {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 6px;
+      gap: 8px;
+    }
+    .drag-pad-values {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .drag-pad-values label {
+      font-size: 11px;
+      color: var(--text-secondary);
+      margin: 0;
+      min-width: auto;
+    }
+    .drag-pad-values .range-num {
+      width: 80px;
+    }
+    /* Character settings layout */
+    .character-split {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    #drag-pad-container {
+      margin-top: 0;
+    }
+    #drag-pad {
+      width: 100%;
+      height: 180px;
+      background: var(--bg-input);
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      position: relative;
+      cursor: crosshair;
+      overflow: hidden;
+      user-select: none;
+      touch-action: none;
+    }
+    #drag-pad:hover {
+      border-color: var(--accent);
+    }
+    #drag-pad:active {
+      border-color: var(--accent);
+      background: var(--bg-input-hover);
+    }
+    #drag-pad-crosshair-h,
+    #drag-pad-crosshair-v {
+      position: absolute;
+      background: var(--border);
+      pointer-events: none;
+    }
+    #drag-pad-crosshair-h {
+      left: 0; right: 0;
+      top: 50%; height: 1px;
+    }
+    #drag-pad-crosshair-v {
+      top: 0; bottom: 0;
+      left: 50%; width: 1px;
+    }
+    #drag-pad-cursor {
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: 2px solid white;
+      box-shadow: 0 1px 4px var(--shadow);
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      transition: none;
+    }
+
+    /* 感情マッピングカード */
+    .emotion-card {
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 8px;
+      transition: border-color 0.15s;
+    }
+    .emotion-card:hover {
+      border-color: var(--accent);
+    }
+    .emotion-card-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .emotion-card-header input {
+      flex: 1;
+      font-size: 13px;
+      padding: 4px 8px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--text);
+    }
+    .emotion-card-header .emotion-label-input {
+      width: 80px;
+      flex: none;
+    }
+    .emotion-card-body {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .emotion-card-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+    }
+    .emotion-card-row label {
+      width: 70px;
+      flex-shrink: 0;
+      color: var(--text-muted);
+    }
+    .emotion-card-row select {
+      flex: 1;
+      font-size: 12px;
+      padding: 4px 6px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--text);
+    }
+    .emotion-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      flex: 1;
+    }
+    .emotion-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+      padding: 2px 6px;
+      background: var(--accent-dim, rgba(59,130,246,0.15));
+      border-radius: 10px;
+      font-size: 11px;
+      color: var(--accent);
+    }
+    .emotion-tag .tag-remove {
+      cursor: pointer;
+      opacity: 0.6;
+      font-size: 10px;
+    }
+    .emotion-tag .tag-remove:hover {
+      opacity: 1;
+    }
+    .emotion-tag-add {
+      cursor: pointer;
+      padding: 2px 6px;
+      border: 1px dashed var(--border);
+      border-radius: 10px;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    .emotion-tag-add:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    .emotion-card-actions {
+      display: flex;
+      gap: 4px;
+    }
+    .emotion-card-actions button {
+      font-size: 11px;
+      padding: 3px 8px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="settings-layout">
+    <!-- ===== Sidebar ===== -->
+    <aside class="sidebar">
+      <div class="sidebar-title" data-i18n="settings.sidebar.title">Settings</div>
+      <nav class="sidebar-nav" role="tablist" aria-label="設定カテゴリ" data-i18n-aria-label="settings.sidebar.title">
+        <button class="sidebar-btn active" role="tab" aria-selected="true" data-tab="general">
+          <span class="sidebar-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 008.6 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 8.6a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></span>
+          <span data-i18n="settings.sidebar.general">一般</span>
+        </button>
+        <button class="sidebar-btn" role="tab" aria-selected="false" data-tab="llm">
+          <span class="sidebar-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a4 4 0 014 4c0 1.1-.9 2-2 2h-4a2 2 0 01-2-2 4 4 0 014-4z"/><path d="M8 8v2a4 4 0 004 4h0a4 4 0 004-4V8"/><path d="M12 14v4"/><path d="M8 22h8"/><circle cx="8" cy="4" r="1" fill="currentColor" stroke="none"/><circle cx="16" cy="4" r="1" fill="currentColor" stroke="none"/></svg></span>
+          <span data-i18n="settings.sidebar.llm">LLM</span>
+        </button>
+        <button class="sidebar-btn" role="tab" aria-selected="false" data-tab="personality">
+          <span class="sidebar-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></span>
+          <span data-i18n="settings.sidebar.personality">人格</span>
+        </button>
+        <button class="sidebar-btn" role="tab" aria-selected="false" data-tab="tts">
+          <span class="sidebar-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 010 14.14"/><path d="M15.54 8.46a5 5 0 010 7.07"/></svg></span>
+          <span data-i18n="settings.sidebar.tts">TTS</span>
+        </button>
+        <button class="sidebar-btn" role="tab" aria-selected="false" data-tab="stt">
+          <span class="sidebar-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 00-3 3v7a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v1a7 7 0 01-14 0v-1"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></span>
+          <span data-i18n="settings.sidebar.stt">STT</span>
+        </button>
+        <button class="sidebar-btn" role="tab" aria-selected="false" data-tab="character">
+          <span class="sidebar-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+          <span data-i18n="settings.sidebar.character">キャラクター</span>
+        </button>
+        <button class="sidebar-btn" role="tab" aria-selected="false" data-tab="memory">
+          <span class="sidebar-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M12 6v6l4 2"/></svg></span>
+          <span data-i18n="settings.sidebar.memory">記憶</span>
+        </button>
+        <button class="sidebar-btn" role="tab" aria-selected="false" data-tab="streaming">
+          <span class="sidebar-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg></span>
+          <span data-i18n="settings.sidebar.streaming">配信</span>
+        </button>
+        <button class="sidebar-btn" role="tab" aria-selected="false" data-tab="openclaw">
+          <span class="sidebar-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg></span>
+          <span data-i18n="settings.sidebar.openclaw">連携</span>
+        </button>
+      </nav>
+    </aside>
+
+    <!-- ===== Content ===== -->
+    <main class="content">
+
+      <!-- ===== Home (Card Grid) ===== -->
+      <div id="tab-home" class="tab-panel active" role="tabpanel">
+        <h2 class="content-header" data-i18n="settings.home.title">設定</h2>
+        <div class="settings-home">
+          <div class="settings-card" data-target="general">
+            <div class="settings-card-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 008.6 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 8.6a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
+              </svg>
+            </div>
+            <div class="settings-card-info">
+              <div class="settings-card-title" data-i18n="settings.home.general.title">一般</div>
+              <div class="settings-card-desc" data-i18n="settings.home.general.desc">テーマ、会話、おやすみモード</div>
+            </div>
+            <span class="settings-card-arrow">&#x276F;</span>
+          </div>
+          <div class="settings-card" data-target="llm">
+            <div class="settings-card-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2a4 4 0 014 4c0 1.1-.9 2-2 2h-4a2 2 0 01-2-2 4 4 0 014-4z"/><path d="M8 8v2a4 4 0 004 4h0a4 4 0 004-4V8"/><path d="M12 14v4"/><path d="M8 22h8"/><circle cx="8" cy="4" r="1" fill="currentColor" stroke="none"/><circle cx="16" cy="4" r="1" fill="currentColor" stroke="none"/>
+              </svg>
+            </div>
+            <div class="settings-card-info">
+              <div class="settings-card-title" data-i18n="settings.home.llm.title">LLM</div>
+              <div class="settings-card-desc" data-i18n="settings.home.llm.desc">AIモデル、APIキー、会話設定</div>
+            </div>
+            <span class="settings-card-arrow">&#x276F;</span>
+          </div>
+          <div class="settings-card" data-target="personality">
+            <div class="settings-card-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+              </svg>
+            </div>
+            <div class="settings-card-info">
+              <div class="settings-card-title" data-i18n="settings.home.personality.title">人格</div>
+              <div class="settings-card-desc" data-i18n="settings.home.personality.desc">キャラクター管理、人格プリセット</div>
+            </div>
+            <span class="settings-card-arrow">&#x276F;</span>
+          </div>
+          <div class="settings-card" data-target="tts">
+            <div class="settings-card-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 010 14.14"/><path d="M15.54 8.46a5 5 0 010 7.07"/>
+              </svg>
+            </div>
+            <div class="settings-card-info">
+              <div class="settings-card-title" data-i18n="settings.home.tts.title">音声合成</div>
+              <div class="settings-card-desc" data-i18n="settings.home.tts.desc">TTS エンジン、読み上げ設定</div>
+            </div>
+            <span class="settings-card-arrow">&#x276F;</span>
+          </div>
+          <div class="settings-card" data-target="stt">
+            <div class="settings-card-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 1a3 3 0 00-3 3v7a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v1a7 7 0 01-14 0v-1"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/>
+              </svg>
+            </div>
+            <div class="settings-card-info">
+              <div class="settings-card-title" data-i18n="settings.home.stt.title">音声認識</div>
+              <div class="settings-card-desc" data-i18n="settings.home.stt.desc">STT エンジン、入力設定</div>
+            </div>
+            <span class="settings-card-arrow">&#x276F;</span>
+          </div>
+          <div class="settings-card" data-target="character">
+            <div class="settings-card-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
+              </svg>
+            </div>
+            <div class="settings-card-info">
+              <div class="settings-card-title" data-i18n="settings.home.character.title">キャラクター</div>
+              <div class="settings-card-desc" data-i18n="settings.home.character.desc">Live2D / VRM モデル設定</div>
+            </div>
+            <span class="settings-card-arrow">&#x276F;</span>
+          </div>
+          <div class="settings-card" data-target="openclaw">
+            <div class="settings-card-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/>
+              </svg>
+            </div>
+            <div class="settings-card-info">
+              <div class="settings-card-title" data-i18n="settings.home.openclaw.title">連携</div>
+              <div class="settings-card-desc" data-i18n="settings.home.openclaw.desc">OpenClaw スキル連携</div>
+            </div>
+            <span class="settings-card-arrow">&#x276F;</span>
+          </div>
+          <div class="settings-card" data-target="memory">
+            <div class="settings-card-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M12 6v6l4 2"/>
+              </svg>
+            </div>
+            <div class="settings-card-info">
+              <div class="settings-card-title" data-i18n="settings.home.memory.title">記憶</div>
+              <div class="settings-card-desc" data-i18n="settings.home.memory.desc">記憶の閲覧・管理・検索設定</div>
+            </div>
+            <span class="settings-card-arrow">&#x276F;</span>
+          </div>
+          <div class="settings-card" data-target="streaming">
+            <div class="settings-card-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+              </svg>
+            </div>
+            <div class="settings-card-info">
+              <div class="settings-card-title" data-i18n="settings.home.streaming.title">配信</div>
+              <div class="settings-card-desc" data-i18n="settings.home.streaming.desc">配信モード、字幕、コメント取得</div>
+            </div>
+            <span class="settings-card-arrow">&#x276F;</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== 一般タブ ===== -->
+      <div id="tab-general" class="tab-panel" role="tabpanel">
+        <div class="breadcrumb">
+          <button class="breadcrumb-back back-to-home">&#x276E;</button>
+          <span class="breadcrumb-text" data-i18n="settings.breadcrumb.settings">設定</span>
+          <span class="breadcrumb-current" data-i18n="settings.breadcrumb.general">/ 一般</span>
+        </div>
+        <h2 class="content-header" data-i18n="settings.general.title">一般設定</h2>
+        <div class="section">
+          <div class="section-title" data-i18n="settings.general.theme.section">テーマ</div>
+          <div class="form-group">
+            <label for="theme-select" data-i18n="settings.general.theme.label">表示テーマ</label>
+            <select id="theme-select">
+              <option value="system" data-i18n="settings.general.theme.system">システム連動（自動）</option>
+              <option value="light" data-i18n="settings.general.theme.light">ライト</option>
+              <option value="dark" data-i18n="settings.general.theme.dark">ダーク</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label data-i18n="settings.general.language.label">言語 / Language</label>
+            <select id="language-select">
+              <option value="ja" data-i18n="settings.general.language.ja">日本語</option>
+              <option value="en" data-i18n="settings.general.language.en">English</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title" data-i18n="settings.general.conversation.section">会話</div>
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="proactive-enabled" checked>
+              <span data-i18n="settings.general.conversation.proactive">自動会話を有効にする</span>
+            </label>
+            <div class="hint" data-i18n="settings.general.conversation.proactiveHint">オンにすると、アイドル時などにキャラクターから話しかけてきます</div>
+          </div>
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="proactive-on-startup">
+              <span data-i18n="settings.general.conversation.startup">起動時に挨拶する</span>
+            </label>
+            <div class="hint" data-i18n="settings.general.conversation.startupHint">アプリ起動後に1日1回、自動で話しかけます</div>
+          </div>
+          <div class="form-group">
+            <label for="persona-proactive-freq"><span data-i18n="settings.general.conversation.freqLabel">話しかけ頻度</span> <span class="range-num" id="persona-proactive-freq-val">たまに</span></label>
+            <input type="range" id="persona-proactive-freq" min="0" max="3" step="1" value="1">
+            <div class="hint" id="persona-proactive-freq-hint" data-i18n="settings.general.proactive.level1hint">15秒以上沈黙で反応。話しかけた後2分間は黙る（デフォルト）</div>
+          </div>
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="segment-split-enabled" checked>
+              <span data-i18n="settings.general.conversation.segment">メッセージを分割表示する</span>
+            </label>
+            <div class="hint" data-i18n="settings.general.conversation.segmentHint">オンにすると、長い返答を句読点ごとに複数の吹き出しに分けて表示します</div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title" data-i18n="settings.general.quiet.section">おやすみモード</div>
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="quiet-hours-enabled">
+              <span data-i18n="settings.general.quiet.enable">おやすみモードを有効にする</span>
+            </label>
+            <div class="hint" data-i18n="settings.general.quiet.hint">指定した時間帯はキャラクターからの自発発言を停止します</div>
+          </div>
+          <div id="quiet-hours-time" style="display:none;">
+            <div style="display:flex;align-items:center;gap:12px;margin-top:8px;">
+              <div class="form-group" style="margin-bottom:0;flex:1;">
+                <label for="quiet-hours-start" data-i18n="settings.general.quiet.start">開始時刻</label>
+                <select id="quiet-hours-start"></select>
+              </div>
+              <span style="color:var(--text-secondary);padding-top:18px;">〜</span>
+              <div class="form-group" style="margin-bottom:0;flex:1;">
+                <label for="quiet-hours-end" data-i18n="settings.general.quiet.end">終了時刻</label>
+                <select id="quiet-hours-end"></select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title" data-i18n="settings.general.data.section">データ管理</div>
+          <div class="form-group">
+            <div class="hint" data-i18n="settings.general.data.hint">全キャラクターの記憶・性格・設定をバックアップ・復元できます</div>
+            <div style="display:flex;gap:8px;margin-top:8px;">
+              <button id="export-data-btn" class="btn btn-primary" style="flex:1;" data-i18n-html="settings.general.data.export">&#x1F4E6; エクスポート</button>
+              <button id="import-data-btn" class="btn btn-secondary" style="flex:1;" data-i18n-html="settings.general.data.import">&#x1F4E5; インポート</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title" data-i18n="settings.general.update.section">アップデート</div>
+          <div class="form-group">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span id="app-version" style="color:var(--text-secondary);font-size:0.85em;">v---</span>
+              <button id="check-update-btn" class="btn btn-secondary" style="font-size:0.85em;padding:4px 12px;" data-i18n="settings.general.update.check">更新を確認</button>
+            </div>
+            <div id="update-result" class="hint" style="margin-top:6px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== LLMタブ ===== -->
+      <div id="tab-llm" class="tab-panel" role="tabpanel">
+        <div class="breadcrumb">
+          <button class="breadcrumb-back back-to-home">&#x276E;</button>
+          <span class="breadcrumb-text" data-i18n="settings.breadcrumb.settings">設定</span>
+          <span class="breadcrumb-current" data-i18n="settings.breadcrumb.llm">/ LLM</span>
+        </div>
+        <h2 class="content-header" data-i18n="settings.llm.title">LLM設定</h2>
+
+        <div class="section">
+          <div class="section-title" data-i18n="settings.llm.main.section">メインLLM</div>
+          <div class="form-group">
+            <label for="llm-provider" data-i18n="settings.llm.main.provider">プロバイダ</label>
+            <select id="llm-provider">
+              <optgroup label="主要プロバイダー" data-i18n="settings.llm.optgroup.major">
+                <option value="claude">Claude (Anthropic)</option>
+                <option value="openai">OpenAI</option>
+                <option value="gemini">Gemini (Google)</option>
+                <option value="deepseek">DeepSeek</option>
+                <option value="groq" data-i18n="settings.llm.provider.groq">Groq（超高速推論）</option>
+                <option value="xai">xAI (Grok)</option>
+                <option value="mistral">Mistral</option>
+              </optgroup>
+              <optgroup label="ルーター・マルチプロバイダー" data-i18n="settings.llm.optgroup.router">
+                <option value="openrouter">OpenRouter</option>
+                <option value="302ai">302.AI</option>
+              </optgroup>
+              <optgroup label="中国系" data-i18n="settings.llm.optgroup.china">
+                <option value="qwen">Qwen (Alibaba)</option>
+                <option value="zhipu">Zhipu (GLM)</option>
+                <option value="minimax">MiniMax</option>
+                <option value="moonshot">Moonshot AI</option>
+                <option value="baichuan">Baichuan</option>
+                <option value="stepfun">Stepfun</option>
+                <option value="modelscope">ModelScope</option>
+                <option value="siliconflow">SiliconFlow</option>
+                <option value="tencent">Tencent Cloud</option>
+              </optgroup>
+              <optgroup label="推論インフラ" data-i18n="settings.llm.optgroup.infra">
+                <option value="togetherai">Together.ai</option>
+                <option value="fireworks">Fireworks.ai</option>
+                <option value="novita">Novita</option>
+                <option value="cloudflare">Cloudflare Workers AI</option>
+                <option value="player2">Player2</option>
+              </optgroup>
+              <optgroup label="ローカル" data-i18n="settings.llm.optgroup.local">
+                <option value="ollama" data-i18n="settings.llm.provider.ollama">Ollama（ローカル）</option>
+                <option value="vllm" data-i18n="settings.llm.provider.vllm">vLLM（ローカル）</option>
+                <option value="sglang" data-i18n="settings.llm.provider.sglang">SGLang（ローカル）</option>
+              </optgroup>
+            </select>
+            <div class="hint" data-i18n="settings.llm.main.providerHint">主要: Claude/OpenAI/Gemini/DeepSeek。ルーター: OpenRouter(複数プロバイダ経由)。ローカル: Ollama/vLLM(APIキー不要)</div>
+          </div>
+          <div class="form-group">
+            <label for="llm-model" data-i18n="settings.llm.main.model">モデル</label>
+            <select id="llm-model">
+              <!-- Populated by JavaScript -->
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="llm-max-tokens" data-i18n="settings.llm.main.maxTokens">出力トークン上限</label>
+            <input type="range" id="llm-max-tokens" value="512" min="128" max="4096" step="64">
+            <input type="number" id="llm-max-tokens-num" class="range-num" value="512" min="128" max="4096" step="64">
+            <div class="hint" data-i18n="settings.llm.main.maxTokensHint">128=短め、512=標準、4096=長文OK。低いほどコスト削減・レスポンス向上</div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title"><span data-i18n="settings.llm.apikey.sectionLabel">APIキー</span> <span class="key-badge unset" id="badge-active" data-i18n="settings.llm.apikey.unset">未設定</span></div>
+          <div id="apikey-claude" class="apikey-group" data-provider="claude">
+            <div class="form-group">
+              <label for="api-key-claude" data-i18n="settings.llm.apikey.claude">Claude (Anthropic) APIキー</label>
+              <div style="display: flex; gap: 6px;">
+                <input type="password" id="api-key-claude" placeholder="sk-ant-..." style="flex: 1;">
+                <a href="https://console.anthropic.com/settings/keys" target="_blank" class="btn btn-secondary get-key-btn" data-i18n="settings.llm.apikey.getKey">キーを取得</a>
+              </div>
+              <div class="hint" data-i18n-html="settings.llm.apikey.envHint.anthropic">環境変数 <code>ANTHROPIC_API_KEY</code> でも設定可能</div>
+            </div>
+          </div>
+          <div id="apikey-openai" class="apikey-group" data-provider="openai" style="display:none">
+            <div class="form-group">
+              <label for="api-key-openai" data-i18n="settings.llm.apikey.openai">OpenAI APIキー</label>
+              <div style="display: flex; gap: 6px;">
+                <input type="password" id="api-key-openai" placeholder="sk-..." style="flex: 1;">
+                <a href="https://platform.openai.com/api-keys" target="_blank" class="btn btn-secondary get-key-btn" data-i18n="settings.llm.apikey.getKey">キーを取得</a>
+              </div>
+              <div class="hint" data-i18n-html="settings.llm.apikey.envHint.openai">環境変数 <code>OPENAI_API_KEY</code> でも設定可能。TTS・STT(Whisper)にも使用</div>
+            </div>
+          </div>
+          <div id="apikey-gemini" class="apikey-group" data-provider="gemini" style="display:none">
+            <div class="form-group">
+              <label for="api-key-google" data-i18n="settings.llm.apikey.google">Google (Gemini) APIキー</label>
+              <div style="display: flex; gap: 6px;">
+                <input type="password" id="api-key-google" placeholder="AIza..." style="flex: 1;">
+                <button class="btn btn-secondary" id="gemini-get-key-btn" style="white-space: nowrap; display: flex; align-items: center; gap: 6px; padding: 4px 12px;">
+                  <svg width="14" height="14" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+                  <span data-i18n="settings.llm.apikey.getKey">キーを取得</span>
+                </button>
+              </div>
+              <div class="hint" data-i18n-html="settings.llm.apikey.envHint.google">無料。Google AI Studio でAPIキーを作成 → 貼り付け。環境変数 <code>GOOGLE_GENERATIVE_AI_API_KEY</code> でも可</div>
+            </div>
+          </div>
+          <div id="apikey-groq" class="apikey-group" data-provider="groq" style="display:none">
+            <div class="form-group">
+              <label for="api-key-groq" data-i18n="settings.llm.apikey.groq">Groq APIキー</label>
+              <div style="display: flex; gap: 6px;">
+                <input type="password" id="api-key-groq" placeholder="gsk_..." style="flex: 1;">
+                <a href="https://console.groq.com/keys" target="_blank" class="btn btn-secondary get-key-btn" data-i18n="settings.llm.apikey.getKey">キーを取得</a>
+              </div>
+              <div class="hint" data-i18n-html="settings.llm.apikey.envHint.groq">環境変数 <code>GROQ_API_KEY</code> でも設定可能。無料枠あり</div>
+            </div>
+          </div>
+          <div id="apikey-deepseek" class="apikey-group" data-provider="deepseek" style="display:none">
+            <div class="form-group">
+              <label for="api-key-deepseek" data-i18n="settings.llm.apikey.deepseek">DeepSeek APIキー</label>
+              <div style="display: flex; gap: 6px;">
+                <input type="password" id="api-key-deepseek" placeholder="sk-..." style="flex: 1;">
+                <a href="https://platform.deepseek.com/api_keys" target="_blank" class="btn btn-secondary get-key-btn" data-i18n="settings.llm.apikey.getKey">キーを取得</a>
+              </div>
+              <div class="hint" data-i18n-html="settings.llm.apikey.envHint.deepseek">環境変数 <code>DEEPSEEK_API_KEY</code> でも設定可能</div>
+            </div>
+          </div>
+          <div id="apikey-openrouter" class="apikey-group" data-provider="openrouter" style="display:none">
+            <div class="form-group">
+              <label data-i18n="settings.llm.apikey.openrouter">OpenRouter APIキー</label>
+              <div style="display: flex; gap: 6px;">
+                <input type="password" class="generic-api-key" data-config-key="openrouterApiKey" placeholder="sk-or-..." style="flex: 1;">
+                <a href="https://openrouter.ai/keys" target="_blank" class="btn btn-secondary get-key-btn" data-i18n="settings.llm.apikey.getKey">キーを取得</a>
+              </div>
+              <div class="hint" data-i18n="settings.llm.apikey.hint.openrouter">100以上のモデルを統一APIで利用。無料モデルあり</div>
+            </div>
+          </div>
+          <div id="apikey-xai" class="apikey-group" data-provider="xai" style="display:none">
+            <div class="form-group">
+              <label data-i18n="settings.llm.apikey.xai">xAI APIキー</label>
+              <div style="display: flex; gap: 6px;">
+                <input type="password" class="generic-api-key" data-config-key="xaiApiKey" placeholder="xai-..." style="flex: 1;">
+                <a href="https://console.x.ai/" target="_blank" class="btn btn-secondary get-key-btn" data-i18n="settings.llm.apikey.getKey">キーを取得</a>
+              </div>
+              <div class="hint" data-i18n="settings.llm.apikey.hint.xai">Grok モデル。毎月$25分の無料クレジット</div>
+            </div>
+          </div>
+          <div id="apikey-mistral" class="apikey-group" data-provider="mistral" style="display:none">
+            <div class="form-group">
+              <label data-i18n="settings.llm.apikey.mistral">Mistral APIキー</label>
+              <div style="display: flex; gap: 6px;">
+                <input type="password" class="generic-api-key" data-config-key="mistralApiKey" placeholder="..." style="flex: 1;">
+                <a href="https://console.mistral.ai/api-keys/" target="_blank" class="btn btn-secondary get-key-btn" data-i18n="settings.llm.apikey.getKey">キーを取得</a>
+              </div>
+            </div>
+          </div>
+          <div id="apikey-togetherai" class="apikey-group" data-provider="togetherai" style="display:none">
+            <div class="form-group">
+              <label data-i18n="settings.llm.apikey.togetherai">Together.ai APIキー</label>
+              <div style="display: flex; gap: 6px;">
+                <input type="password" class="generic-api-key" data-config-key="togetheraiApiKey" placeholder="..." style="flex: 1;">
+                <a href="https://api.together.ai/settings/api-keys" target="_blank" class="btn btn-secondary get-key-btn" data-i18n="settings.llm.apikey.getKey">キーを取得</a>
+              </div>
+              <div class="hint" data-i18n="settings.llm.apikey.hint.togetherai">無料枠あり。OSSモデル多数</div>
+            </div>
+          </div>
+          <div id="apikey-fireworks" class="apikey-group" data-provider="fireworks" style="display:none">
+            <div class="form-group">
+              <label data-i18n="settings.llm.apikey.fireworks">Fireworks.ai APIキー</label>
+              <div style="display: flex; gap: 6px;">
+                <input type="password" class="generic-api-key" data-config-key="fireworksApiKey" placeholder="fw_..." style="flex: 1;">
+                <a href="https://fireworks.ai/account/api-keys" target="_blank" class="btn btn-secondary get-key-btn" data-i18n="settings.llm.apikey.getKey">キーを取得</a>
+              </div>
+            </div>
+          </div>
+          <div id="apikey-novita" class="apikey-group" data-provider="novita" style="display:none">
+            <div class="form-group">
+              <label data-i18n="settings.llm.apikey.novita">Novita APIキー</label>
+              <div style="display: flex; gap: 6px;">
+                <input type="password" class="generic-api-key" data-config-key="novitaApiKey" placeholder="..." style="flex: 1;">
+                <a href="https://novita.ai/settings/key-management" target="_blank" class="btn btn-secondary get-key-btn" data-i18n="settings.llm.apikey.getKey">キーを取得</a>
+              </div>
+            </div>
+          </div>
+          <div id="apikey-cloudflare" class="apikey-group" data-provider="cloudflare" style="display:none">
+            <div class="form-group">
+              <label data-i18n="settings.llm.apikey.cloudflare">Cloudflare APIキー</label>
+              <div style="display: flex; gap: 6px;">
+                <input type="password" class="generic-api-key" data-config-key="cloudflareApiKey" placeholder="..." style="flex: 1;">
+                <a href="https://dash.cloudflare.com/profile/api-tokens" target="_blank" class="btn btn-secondary get-key-btn" data-i18n="settings.llm.apikey.getKey">キーを取得</a>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Account ID</label>
+              <input type="text" class="generic-api-key" data-config-key="cloudflareAccountId" data-i18n-placeholder="settings.llm.apikey.cloudflareAccountIdPlaceholder" placeholder="アカウントID">
+              <div class="hint" data-i18n="settings.llm.apikey.hint.cloudflare">Cloudflareダッシュボード → Workers & Pages → Account ID</div>
+            </div>
+          </div>
+          <div id="apikey-minimax" class="apikey-group" data-provider="minimax" style="display:none">
+            <div class="form-group">
+              <label data-i18n="settings.llm.apikey.minimax">MiniMax APIキー</label>
+              <div style="display: flex; gap: 6px;">
+                <input type="password" class="generic-api-key" data-config-key="minimaxApiKey" placeholder="..." style="flex: 1;">
+                <a href="https://platform.minimaxi.com/user-center/basic-information/interface-key" target="_blank" class="btn btn-secondary get-key-btn" data-i18n="settings.llm.apikey.getKey">キーを取得</a>
+              </div>
+            </div>
+          </div>
+          <div id="apikey-moonshot" class="apikey-group" data-provider="moonshot" style="display:none">
+            <div class="form-group">
+              <label data-i18n="settings.llm.apikey.moonshot">Moonshot APIキー</label>
+              <div style="display: flex; gap: 6px;">
+                <input type="password" class="generic-api-key" data-config-key="moonshotApiKey" placeholder="sk-..." style="flex: 1;">
+                <a href="https://platform.moonshot.cn/console/api-keys" target="_blank" class="btn btn-secondary get-key-btn" data-i18n="settings.llm.apikey.getKey">キーを取得</a>
+              </div>
+            </div>
+          </div>
+          <div id="apikey-qwen" class="apikey-group" data-provider="qwen" style="display:none">
+            <div class="form-group">
+              <label data-i18n="settings.llm.apikey.qwen">Qwen (DashScope) APIキー</label>
+              <div style="display: flex; gap: 6px;">
+                <input type="password" class="generic-api-key" data-config-key="qwenApiKey" placeholder="sk-..." style="flex: 1;">
+                <a href="https://dashscope.console.aliyun.com/" target="_blank" class="btn btn-secondary get-key-btn" data-i18n="settings.llm.apikey.getKey">キーを取得</a>
+              </div>
+            </div>
+          </div>
+          <div id="apikey-zhipu" class="apikey-group" data-provider="zhipu" style="display:none">
+            <div class="form-group">
+              <label data-i18n="settings.llm.apikey.zhipu">Zhipu (GLM) APIキー</label>
+              <div style="display: flex; gap: 6px;">
+                <input type="password" class="generic-api-key" data-config-key="zhipuApiKey" placeholder="..." style="flex: 1;">
+                <a href="https://open.bigmodel.cn/usercenter/apikeys" target="_blank" class="btn btn-secondary get-key-btn" data-i18n="settings.llm.apikey.getKey">キーを取得</a>
+              </div>
+            </div>
+          </div>
+          <div id="apikey-siliconflow" class="apikey-group" data-provider="siliconflow" style="display:none">
+            <div class="form-group">
+              <label data-i18n="settings.llm.apikey.siliconflow">SiliconFlow APIキー</label>
+              <div style="display: flex; gap: 6px;">
+                <input type="password" class="generic-api-key" data-config-key="siliconflowApiKey" placeholder="sk-..." style="flex: 1;">
+                <a href="https://cloud.siliconflow.cn/account/ak" target="_blank" class="btn btn-secondary get-key-btn" data-i18n="settings.llm.apikey.getKey">キーを取得</a>
+              </div>
+            </div>
+          </div>
+          <div id="apikey-stepfun" class="apikey-group" data-provider="stepfun" style="display:none">
+            <div class="form-group">
+              <label data-i18n="settings.llm.apikey.stepfun">Stepfun APIキー</label>
+              <div style="display: flex; gap: 6px;">
+                <input type="password" class="generic-api-key" data-config-key="stepfunApiKey" placeholder="..." style="flex: 1;">
+                <a href="https://platform.stepfun.com/interface-key" target="_blank" class="btn btn-secondary get-key-btn" data-i18n="settings.llm.apikey.getKey">キーを取得</a>
+              </div>
+            </div>
+          </div>
+          <div id="apikey-baichuan" class="apikey-group" data-provider="baichuan" style="display:none">
+            <div class="form-group">
+              <label data-i18n="settings.llm.apikey.baichuan">Baichuan APIキー</label>
+              <div style="display: flex; gap: 6px;">
+                <input type="password" class="generic-api-key" data-config-key="baichuanApiKey" placeholder="..." style="flex: 1;">
+                <a href="https://platform.baichuan-ai.com/console/apikey" target="_blank" class="btn btn-secondary get-key-btn" data-i18n="settings.llm.apikey.getKey">キーを取得</a>
+              </div>
+            </div>
+          </div>
+          <div id="apikey-modelscope" class="apikey-group" data-provider="modelscope" style="display:none">
+            <div class="form-group">
+              <label data-i18n="settings.llm.apikey.modelscope">ModelScope APIキー</label>
+              <div style="display: flex; gap: 6px;">
+                <input type="password" class="generic-api-key" data-config-key="modelscopeApiKey" placeholder="..." style="flex: 1;">
+                <a href="https://modelscope.cn/my/myaccesstoken" target="_blank" class="btn btn-secondary get-key-btn" data-i18n="settings.llm.apikey.getKey">キーを取得</a>
+              </div>
+            </div>
+          </div>
+          <div id="apikey-tencent" class="apikey-group" data-provider="tencent" style="display:none">
+            <div class="form-group">
+              <label data-i18n="settings.llm.apikey.tencent">Tencent Cloud APIキー</label>
+              <div style="display: flex; gap: 6px;">
+                <input type="password" class="generic-api-key" data-config-key="tencentApiKey" placeholder="..." style="flex: 1;">
+                <a href="https://console.cloud.tencent.com/cam/capi" target="_blank" class="btn btn-secondary get-key-btn" data-i18n="settings.llm.apikey.getKey">キーを取得</a>
+              </div>
+            </div>
+          </div>
+          <div id="apikey-player2" class="apikey-group" data-provider="player2" style="display:none">
+            <div class="form-group">
+              <label data-i18n="settings.llm.apikey.player2">Player2 APIキー</label>
+              <div style="display: flex; gap: 6px;">
+                <input type="password" class="generic-api-key" data-config-key="player2ApiKey" placeholder="..." style="flex: 1;">
+                <a href="https://player2.ai/dashboard" target="_blank" class="btn btn-secondary get-key-btn" data-i18n="settings.llm.apikey.getKey">キーを取得</a>
+              </div>
+            </div>
+          </div>
+          <div id="apikey-302ai" class="apikey-group" data-provider="302ai" style="display:none">
+            <div class="form-group">
+              <label data-i18n="settings.llm.apikey.302ai">302.AI APIキー</label>
+              <input type="password" class="generic-api-key" data-config-key="302aiApiKey" placeholder="sk-...">
+              <div class="hint" data-i18n-html="settings.llm.apikey.hint.302ai"><a href="https://dash.302.ai/" target="_blank" style="color: var(--accent);">dash.302.ai</a> で取得</div>
+            </div>
+          </div>
+          <div id="apikey-ollama" class="apikey-group" data-provider="ollama" style="display:none">
+            <div class="form-group">
+              <div class="hint" style="padding: 8px; background: var(--bg-hover); border-radius: 6px;" data-i18n-html="settings.llm.apikey.noKeyNeeded.ollama">APIキー不要。<code>ollama serve</code> でローカルサーバーを起動してください（デフォルト: localhost:11434）</div>
+            </div>
+          </div>
+          <div id="apikey-vllm" class="apikey-group" data-provider="vllm" style="display:none">
+            <div class="form-group">
+              <div class="hint" style="padding: 8px; background: var(--bg-hover); border-radius: 6px;" data-i18n="settings.llm.apikey.noKeyNeeded.vllm">APIキー不要。vLLMサーバーを起動してください（デフォルト: localhost:8000）</div>
+            </div>
+          </div>
+          <div id="apikey-sglang" class="apikey-group" data-provider="sglang" style="display:none">
+            <div class="form-group">
+              <div class="hint" style="padding: 8px; background: var(--bg-hover); border-radius: 6px;" data-i18n="settings.llm.apikey.noKeyNeeded.sglang">APIキー不要。SGLangサーバーを起動してください（デフォルト: localhost:30000）</div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="section">
+          <div class="section-title" data-i18n="settings.llm.conversation.section">会話設定</div>
+          <div class="form-group">
+            <label for="history-turns"><span data-i18n="settings.llm.conversation.historyTurns">会話履歴参照件数</span> <span id="history-turns-val" class="range-num">20</span></label>
+            <input type="range" id="history-turns" min="5" max="50" step="5" value="20">
+            <div class="hint" data-i18n="settings.llm.conversation.historyTurnsHint">LLMに渡す過去の会話ターン数。多いほど文脈が豊かになりますがコストが上がります</div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title" data-i18n="settings.llm.utility.section">ユーティリティLLM（要約・記憶・リフレクション用）</div>
+          <div class="form-group">
+            <label for="utility-provider" data-i18n="settings.llm.utility.provider">プロバイダ</label>
+            <select id="utility-provider">
+              <option value="openai">OpenAI</option>
+              <option value="gemini">Gemini (Google)</option>
+              <option value="groq">Groq</option>
+              <option value="deepseek">DeepSeek</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="utility-model" data-i18n="settings.llm.utility.model">モデル</label>
+            <select id="utility-model">
+              <!-- Populated by JavaScript -->
+            </select>
+            <div class="hint" data-i18n="settings.llm.utility.hint">バックグラウンド処理用。安くて速いモデル推奨（gpt-4o-mini等）</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== 人格タブ ===== -->
+      <div id="tab-personality" class="tab-panel" role="tabpanel">
+        <div class="breadcrumb">
+          <button class="breadcrumb-back back-to-home">&#x276E;</button>
+          <span class="breadcrumb-text" data-i18n="settings.breadcrumb.settings">設定</span>
+          <span class="breadcrumb-current" data-i18n="settings.breadcrumb.personality">/ 人格</span>
+        </div>
+        <h2 class="content-header" data-i18n="settings.personality.title">人格設定</h2>
+
+        <div class="section">
+          <div class="section-title" data-i18n="settings.personality.slots.section">キャラクター管理</div>
+          <div class="form-group">
+            <label for="slot-select" data-i18n="settings.personality.slots.label">キャラクター選択</label>
+            <div class="inline-group">
+              <select id="slot-select" style="flex: 1;">
+              </select>
+              <button class="btn btn-secondary" id="slot-switch-btn" data-i18n="settings.personality.slots.switch">切替</button>
+              <button class="btn btn-secondary" id="slot-duplicate-btn" data-i18n="settings.personality.slots.duplicate">複製</button>
+              <button class="btn btn-secondary" id="slot-create-btn" data-i18n="settings.personality.slots.create">新規</button>
+            </div>
+            <div class="hint" style="margin-top: 6px;" data-i18n="settings.personality.slots.hint">切替すると記憶や関係性もそのキャラのものに変わります</div>
+          </div>
+          <div class="inline-group" style="margin-top: 8px;">
+            <button class="btn btn-secondary" id="slot-rename-btn" style="font-size: 12px;" data-i18n="settings.personality.slots.rename">名前変更</button>
+            <button class="btn btn-danger" id="slot-delete-btn" style="font-size: 12px;" data-i18n="common.delete">削除</button>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title" data-i18n="settings.personality.basic.section">基本設定</div>
+          <div class="row">
+            <div class="form-group">
+              <label for="companion-name" data-i18n="settings.personality.basic.companionName">コンパニオンの名前</label>
+              <input type="text" id="companion-name" placeholder="相棒" data-i18n-placeholder="settings.personality.basic.companionNamePlaceholder">
+              <div class="hint" data-i18n="settings.personality.basic.companionNameHint">キャラクターの名前（スロットごとに別）</div>
+            </div>
+            <div class="form-group">
+              <label for="call-user" data-i18n="settings.personality.basic.callUser">あなたの呼び名</label>
+              <input type="text" id="call-user" placeholder="マスター" data-i18n-placeholder="settings.personality.basic.callUserPlaceholder">
+              <div class="hint" data-i18n="settings.personality.basic.callUserHint">このキャラがあなたを呼ぶ時の名前（スロットごとに別）</div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="form-group">
+              <label for="user-name-setting" data-i18n="settings.personality.basic.userName">ユーザー名</label>
+              <input type="text" id="user-name-setting" placeholder="名前" data-i18n-placeholder="settings.personality.basic.userNamePlaceholder">
+              <div class="hint" data-i18n="settings.personality.basic.userNameHint">全キャラ共通</div>
+            </div>
+            <div class="form-group">
+              <label for="user-interests-setting" data-i18n="settings.personality.basic.interests">趣味・好きなこと</label>
+              <input type="text" id="user-interests-setting" placeholder="ゲーム, アニメ, プログラミング" data-i18n-placeholder="settings.personality.basic.interestsPlaceholder">
+              <div class="hint" data-i18n="settings.personality.basic.interestsHint">カンマ区切り（スロットごとに別）</div>
+            </div>
+          </div>
+          <button class="btn btn-primary" id="save-basic-settings-btn" style="margin-top: 8px;" data-i18n="settings.personality.basic.save">基本設定を保存</button>
+        </div>
+
+        <div class="section">
+          <div class="section-title" data-i18n="settings.personality.preset.section">人格プリセット</div>
+          <div id="preset-tabs-bar" class="preset-tabs-bar">
+            <!-- タブはJSで動的生成 -->
+          </div>
+
+          <div id="preset-editor" style="display: none; margin-top: 12px;">
+            <!-- 編集モード切り替え -->
+            <div class="personality-mode-toggle">
+              <span class="mode-label active" id="mode-label-simple" data-i18n="settings.personality.preset.modeSimple">シンプル</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="personality-mode-toggle">
+                <span class="toggle-slider"></span>
+              </label>
+              <span class="mode-label" id="mode-label-freeEdit" data-i18n="settings.personality.preset.modeFreeEdit">自由編集</span>
+            </div>
+
+            <div class="form-group">
+              <label for="preset-name-input" data-i18n="settings.personality.preset.name">プリセット名</label>
+              <input type="text" id="preset-name-input" placeholder="プリセット名" data-i18n-placeholder="settings.personality.preset.namePlaceholder">
+            </div>
+
+            <!-- シンプルモード（デフォルト） -->
+            <div id="simple-mode-editor">
+              <div class="form-group">
+                <label for="personality-traits" data-i18n="settings.personality.preset.traits">性格・特徴（1行ずつ）</label>
+                <textarea id="personality-traits" rows="5"></textarea>
+              </div>
+            <div class="form-group">
+              <label for="personality-speech" data-i18n="settings.personality.preset.speech">話し方（1行ずつ）</label>
+              <textarea id="personality-speech" rows="4"></textarea>
+            </div>
+            <div class="form-group">
+              <label for="personality-forbidden" data-i18n="settings.personality.preset.forbidden">スタンス・態度（1行ずつ）</label>
+              <textarea id="personality-forbidden" rows="3" placeholder="例: 短く返す方が自然&#10;説教より共感で返す&#10;相手のペースに合わせる"></textarea>
+            </div>
+            <details class="personality-advanced">
+              <summary data-i18n="settings.personality.preset.advancedSummary">詳細設定（アイデンティティ・リアクション語彙）</summary>
+              <div class="form-group">
+                <label for="personality-core-identity" data-i18n="settings.personality.preset.coreIdentity">アイデンティティ（ブレない核 — 1行ずつ）</label>
+                <textarea id="personality-core-identity" rows="3" placeholder="例: 猫が好き&#10;負けず嫌い&#10;本音をなかなか言えない"></textarea>
+              </div>
+              <div class="form-group">
+                <label for="personality-identity" data-i18n="settings.personality.preset.identity">自己認識（自分は何者か）</label>
+                <input type="text" id="personality-identity" placeholder="例: 相棒。迷った時に背中を押す存在">
+              </div>
+              <div class="form-group">
+                <label for="personality-weaknesses" data-i18n="settings.personality.preset.weaknesses">弱点（1行ずつ）</label>
+                <textarea id="personality-weaknesses" rows="3" placeholder="例: テンション高すぎて空気読めない時がある"></textarea>
+              </div>
+              <div class="form-group">
+                <label for="personality-quirks" data-i18n="settings.personality.preset.quirks">癖・特徴（1行ずつ）</label>
+                <textarea id="personality-quirks" rows="3" placeholder="例: 気になったことはすぐ食いつく"></textarea>
+              </div>
+              <div class="form-group reactions-group">
+                <label data-i18n="settings.personality.preset.reactions">リアクション語彙（スラッシュ区切り）</label>
+                <div class="reaction-row">
+                  <span class="reaction-label" data-i18n="settings.personality.preset.reaction.agree">同意</span>
+                  <input type="text" id="reactions-agree" placeholder="いいね！ / わかる〜 / それな">
+                </div>
+                <div class="reaction-row">
+                  <span class="reaction-label" data-i18n="settings.personality.preset.reaction.disagree">反論</span>
+                  <input type="text" id="reactions-disagree" placeholder="えー無理〜 / ちょっと違くね？">
+                </div>
+                <div class="reaction-row">
+                  <span class="reaction-label" data-i18n="settings.personality.preset.reaction.excited">興奮</span>
+                  <input type="text" id="reactions-excited" placeholder="やばくない！？ / まって！！">
+                </div>
+                <div class="reaction-row">
+                  <span class="reaction-label" data-i18n="settings.personality.preset.reaction.tease">いじり</span>
+                  <input type="text" id="reactions-tease" placeholder="ウケるw / おまww">
+                </div>
+                <div class="reaction-row">
+                  <span class="reaction-label" data-i18n="settings.personality.preset.reaction.comfort">慰め</span>
+                  <input type="text" id="reactions-comfort" placeholder="大丈夫〜 / どんまい！">
+                </div>
+              </div>
+              <div class="form-group">
+                <label data-i18n="settings.personality.preset.examples">会話例（1行1例、LLMへのテンポ見本）</label>
+                <textarea id="personality-examples" rows="5" placeholder="ユーザー「最近NARUTO見終わった」→「え、NARUTO！カカシ先生推し」（自分の話）"></textarea>
+              </div>
+            </details>
+            </div>
+
+            <!-- 自由編集モード（初期非表示） -->
+            <div id="free-edit-mode-editor" style="display: none;">
+              <div class="form-group">
+                <label for="personality-free-edit">
+                  <span data-i18n="settings.personality.preset.freeEditLabel">ペルソナ層プロンプト（自由編集）</span>
+                  <span class="hint" style="display: block; margin-top: 0.25rem; font-size: 0.85rem; color: #888;" data-i18n="settings.personality.preset.freeEditHint">
+                    このテキストがそのままシステムプロンプトのペルソナ層に挿入されます
+                  </span>
+                </label>
+                <textarea id="personality-free-edit" rows="20" placeholder="あなたは${callUser}の友達。名前は${companionName}。
+
+# 性格
+- 明るくてちょっと天然
+- ..."></textarea>
+              </div>
+            </div>
+
+            <div class="preset-editor-actions">
+              <button class="btn btn-primary" id="preset-apply-btn" data-i18n="common.apply">適用</button>
+              <button class="btn btn-secondary" id="preset-save-btn" data-i18n="common.save">保存</button>
+              <button class="btn btn-danger" id="preset-delete-btn" style="margin-left: auto;" data-i18n="common.delete">削除</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ===== TTSタブ ===== -->
+      <div id="tab-tts" class="tab-panel" role="tabpanel">
+        <div class="breadcrumb">
+          <button class="breadcrumb-back back-to-home">&#x276E;</button>
+          <span class="breadcrumb-text" data-i18n="settings.breadcrumb.settings">設定</span>
+          <span class="breadcrumb-current" data-i18n="settings.breadcrumb.tts">/ 音声合成</span>
+        </div>
+        <h2 class="content-header" data-i18n="settings.tts.title">音声設定（TTS）</h2>
+
+        <div class="section">
+          <div class="section-title" data-i18n="settings.tts.section">読み上げ</div>
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="tts-enabled" checked>
+              <span data-i18n="settings.tts.enable">音声読み上げを有効にする</span>
+            </label>
+          </div>
+          <div class="form-group">
+            <label for="tts-engine" data-i18n="settings.tts.engine">読み上げエンジン</label>
+            <select id="tts-engine">
+              <option value="web-speech" data-i18n="settings.tts.engine.webSpeech">Web Speech API（ブラウザ標準）</option>
+              <option value="voicevox" data-i18n="settings.tts.engine.voicevox">VOICEVOX（日本語特化）</option>
+              <option value="openai" data-i18n="settings.tts.engine.openai">OpenAI TTS（高品質）</option>
+              <option value="elevenlabs" data-i18n="settings.tts.engine.elevenlabs">ElevenLabs（超リアル）</option>
+              <option value="google-tts" data-i18n="settings.tts.engine.googleTts">Google Cloud TTS</option>
+              <option value="aivis-speech" data-i18n="settings.tts.engine.aivisSpeech">AivisSpeech（VOICEVOX互換）</option>
+              <option value="style-bert-vits2" data-i18n="settings.tts.engine.sbv2">Style-Bert-VITS2（スタイル制御）</option>
+              <option value="openai-compat-tts" data-i18n="settings.tts.engine.openaiCompat">OpenAI互換TTS（Deepgram/Azure/Kokoro等）</option>
+              <option value="none" data-i18n="settings.tts.engine.none">無効</option>
+            </select>
+            <div class="hint" data-i18n="settings.tts.engineHint">Web Speech: 無料。VOICEVOX/Aivis: ローカル。OpenAI/ElevenLabs: API。OpenAI互換: Deepgram, Azure, Kokoro等対応</div>
+          </div>
+        </div>
+
+        <!-- VOICEVOX Settings -->
+        <div id="voicevox-settings" class="section" style="display: none;">
+          <div class="section-title" data-i18n="settings.tts.voicevox.section">VOICEVOX設定</div>
+          <div class="form-group">
+            <label for="voicevox-url" data-i18n="settings.tts.voicevox.url">URL</label>
+            <input type="text" id="voicevox-url" value="http://127.0.0.1:50021">
+            <div class="hint" data-i18n="settings.tts.voicevox.urlHint">VOICEVOXエンジンのアドレス（通常はデフォルトのまま）</div>
+          </div>
+          <div class="form-group">
+            <label data-i18n="settings.tts.voicevox.voice">ボイスタイプ選択</label>
+            <select id="voicevox-speaker-select" style="width: 100%;">
+              <option value="0">四国めたん/ノーマル</option>
+            </select>
+            <input type="hidden" id="voicevox-speaker" value="0">
+            <div style="margin-top: 6px;">
+              <button class="btn btn-secondary" id="voicevox-refresh-speakers" style="width: 100%;" data-i18n="settings.tts.voicevox.refresh">🔄 話者リストを更新</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="voicevox-speed"><span data-i18n="settings.tts.voicevox.speed">話速</span>: <span id="voicevox-speed-val">1</span></label>
+            <input type="range" id="voicevox-speed" value="1.0" min="0.5" max="2.0" step="0.1">
+            <input type="number" id="voicevox-speed-num" class="range-num" value="1.0" min="0.5" max="2.0" step="0.1">
+          </div>
+          <div class="form-group">
+            <label for="voicevox-pitch"><span data-i18n="settings.tts.voicevox.pitch">音高</span>: <span id="voicevox-pitch-val">0</span></label>
+            <input type="range" id="voicevox-pitch" value="0" min="-0.15" max="0.15" step="0.01">
+            <input type="number" id="voicevox-pitch-num" class="range-num" value="0" min="-0.15" max="0.15" step="0.01">
+          </div>
+          <div class="form-group">
+            <label for="voicevox-intonation"><span data-i18n="settings.tts.voicevox.intonation">抑揚</span>: <span id="voicevox-intonation-val">1</span></label>
+            <input type="range" id="voicevox-intonation" value="1.0" min="0.0" max="2.0" step="0.1">
+            <input type="number" id="voicevox-intonation-num" class="range-num" value="1.0" min="0.0" max="2.0" step="0.1">
+          </div>
+          <span id="voicevox-status" style="display: block; margin-top: 6px; font-size: 12px;"></span>
+        </div>
+
+        <!-- OpenAI TTS Settings -->
+        <div id="openai-tts-settings" class="section" style="display: none;">
+          <div class="section-title" data-i18n="settings.tts.openai.section">OpenAI TTS設定</div>
+          <div class="form-group">
+            <label for="openai-tts-voice" data-i18n="settings.tts.openai.voice">音声</label>
+            <select id="openai-tts-voice">
+              <option value="alloy">Alloy（中性）</option>
+              <option value="ash">Ash（男性）</option>
+              <option value="ballad">Ballad（男性・温かい）</option>
+              <option value="coral">Coral（女性）</option>
+              <option value="echo">Echo（男性）</option>
+              <option value="fable">Fable（男性）</option>
+              <option value="nova" selected>Nova（女性）</option>
+              <option value="onyx">Onyx（男性・低音）</option>
+              <option value="sage">Sage（中性）</option>
+              <option value="shimmer">Shimmer（女性）</option>
+              <option value="verse">Verse（男性）</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="openai-tts-model" data-i18n="settings.tts.openai.model">モデル</label>
+            <select id="openai-tts-model">
+              <option value="gpt-4o-mini-tts" data-i18n="settings.tts.openai.model.gpt4oMiniTts">gpt-4o-mini-tts（最新・感情豊か）</option>
+              <option value="tts-1" data-i18n="settings.tts.openai.model.tts1">tts-1（標準・高速）</option>
+              <option value="tts-1-hd" data-i18n="settings.tts.openai.model.tts1hd">tts-1-hd（高品質）</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="openai-tts-speed" data-i18n="settings.tts.openai.speed">速度</label>
+            <input type="range" id="openai-tts-speed" value="1.0" min="0.25" max="4.0" step="0.05">
+            <input type="number" id="openai-tts-speed-num" class="range-num" value="1.0" min="0.25" max="4.0" step="0.05">
+          </div>
+        </div>
+
+        <!-- ElevenLabs Settings -->
+        <div id="elevenlabs-settings" class="section" style="display: none;">
+          <div class="section-title" data-i18n="settings.tts.elevenlabs.section">ElevenLabs設定</div>
+          <div class="form-group">
+            <label for="api-key-elevenlabs"><span data-i18n="settings.tts.elevenlabs.apikeyLabel">APIキー</span> <span class="key-badge unset" id="badge-elevenlabs" data-i18n="settings.llm.apikey.unset">未設定</span></label>
+            <input type="password" id="api-key-elevenlabs" placeholder="sk_...">
+            <div class="hint" data-i18n-html="settings.tts.elevenlabs.envHint">環境変数 <code>ELEVENLABS_API_KEY</code> でも設定可能</div>
+          </div>
+          <div class="form-group">
+            <label for="elevenlabs-voice-id" data-i18n="settings.tts.elevenlabs.voiceId">Voice ID</label>
+            <input type="text" id="elevenlabs-voice-id" placeholder="ElevenLabsのVoice ID">
+            <div class="hint" data-i18n="settings.tts.elevenlabs.voiceIdHint">ElevenLabsダッシュボードのVoice Library からIDをコピー</div>
+          </div>
+          <div class="form-group">
+            <label for="elevenlabs-model" data-i18n="settings.tts.elevenlabs.model">モデル</label>
+            <select id="elevenlabs-model">
+              <option value="eleven_multilingual_v2">Multilingual v2（多言語・推奨）</option>
+              <option value="eleven_flash_v2_5">Flash v2.5（超低遅延・多言語）</option>
+              <option value="eleven_turbo_v2_5">Turbo v2.5（低遅延）</option>
+              <option value="eleven_turbo_v2">Turbo v2（低遅延・旧版）</option>
+              <option value="eleven_flash_v2">Flash v2（超低遅延・旧版）</option>
+              <option value="eleven_multilingual_v1">Multilingual v1（多言語・旧版）</option>
+              <option value="eleven_multilingual_sts_v2">STS v2（音声変換）</option>
+              <option value="eleven_monolingual_v1">Monolingual v1（英語のみ）</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="elevenlabs-stability" data-i18n="settings.tts.elevenlabs.stability">安定性</label>
+            <input type="range" id="elevenlabs-stability" value="0.5" min="0" max="1" step="0.05">
+            <input type="number" id="elevenlabs-stability-num" class="range-num" value="0.5" min="0" max="1" step="0.05">
+            <div class="hint" data-i18n="settings.tts.elevenlabs.stabilityHint">高い: 安定・一貫性、低い: 表現豊か・ばらつき</div>
+          </div>
+          <div class="form-group">
+            <label for="elevenlabs-similarity" data-i18n="settings.tts.elevenlabs.similarity">類似度ブースト</label>
+            <input type="range" id="elevenlabs-similarity" value="0.75" min="0" max="1" step="0.05">
+            <input type="number" id="elevenlabs-similarity-num" class="range-num" value="0.75" min="0" max="1" step="0.05">
+          </div>
+          <div class="form-group">
+            <label for="elevenlabs-speed" data-i18n="settings.tts.elevenlabs.speed">速度</label>
+            <input type="range" id="elevenlabs-speed" value="1.0" min="0.5" max="2.0" step="0.05">
+            <input type="number" id="elevenlabs-speed-num" class="range-num" value="1.0" min="0.5" max="2.0" step="0.05">
+          </div>
+        </div>
+
+        <!-- Google Cloud TTS Settings -->
+        <div id="google-tts-settings" class="section" style="display: none;">
+          <div class="section-title" data-i18n="settings.tts.google.section">Google Cloud TTS設定</div>
+          <div class="form-group">
+            <label for="google-tts-language" data-i18n="settings.tts.google.language">言語コード</label>
+            <input type="text" id="google-tts-language" value="ja-JP">
+            <div class="hint" data-i18n="settings.tts.google.languageHint">ja-JP, en-US, ko-KR など</div>
+          </div>
+          <div class="form-group">
+            <label for="google-tts-voice" data-i18n="settings.tts.google.voice">音声名</label>
+            <input type="text" id="google-tts-voice" value="ja-JP-Neural2-B">
+            <div class="hint" data-i18n="settings.tts.google.voiceHint">例: ja-JP-Neural2-B, ja-JP-Wavenet-A など</div>
+          </div>
+          <div class="form-group">
+            <label for="google-tts-rate" data-i18n="settings.tts.google.rate">速度</label>
+            <input type="range" id="google-tts-rate" value="1.0" min="0.25" max="4.0" step="0.05">
+            <input type="number" id="google-tts-rate-num" class="range-num" value="1.0" min="0.25" max="4.0" step="0.05">
+          </div>
+          <div class="form-group">
+            <label for="google-tts-pitch" data-i18n="settings.tts.google.pitch">ピッチ</label>
+            <input type="range" id="google-tts-pitch" value="0" min="-20" max="20" step="0.5">
+            <input type="number" id="google-tts-pitch-num" class="range-num" value="0" min="-20" max="20" step="0.5">
+          </div>
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="google-tts-use-gemini-key" checked>
+              <span data-i18n="settings.tts.google.useGeminiKey">GeminiのAPIキーを共用する</span>
+            </label>
+            <div class="hint" data-i18n="settings.tts.google.useGeminiKeyHint">オフにすると別のGoogle TTS専用キーを使用します</div>
+          </div>
+        </div>
+
+        <!-- AivisSpeech Settings -->
+        <div id="aivis-speech-settings" class="section" style="display: none;">
+          <div class="section-title" data-i18n="settings.tts.aivis.section">AivisSpeech設定（VOICEVOX互換）</div>
+          <div class="form-group">
+            <label for="aivis-speech-url" data-i18n="settings.tts.aivis.url">URL</label>
+            <input type="text" id="aivis-speech-url" value="http://127.0.0.1:10101">
+            <div class="hint" data-i18n="settings.tts.aivis.urlHint">AivisSpeechエンジンのアドレス（デフォルト: ポート10101）</div>
+          </div>
+          <div class="form-group">
+            <label data-i18n="settings.tts.aivis.voice">ボイスタイプ選択</label>
+            <select id="aivis-speech-speaker-select" style="width: 100%;">
+              <option value="0">話者0</option>
+            </select>
+            <input type="hidden" id="aivis-speech-speaker" value="0">
+            <div style="margin-top: 6px;">
+              <button class="btn btn-secondary" id="aivis-speech-refresh-speakers" style="width: 100%;" data-i18n="settings.tts.aivis.refresh">🔄 話者リストを更新</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="aivis-speech-speed"><span data-i18n="settings.tts.aivis.speed">話速</span>: <span id="aivis-speech-speed-val">1</span></label>
+            <input type="range" id="aivis-speech-speed" value="1.0" min="0.5" max="2.0" step="0.1">
+            <input type="number" id="aivis-speech-speed-num" class="range-num" value="1.0" min="0.5" max="2.0" step="0.1">
+          </div>
+          <div class="form-group">
+            <label for="aivis-speech-pitch"><span data-i18n="settings.tts.aivis.pitch">音高</span>: <span id="aivis-speech-pitch-val">0</span></label>
+            <input type="range" id="aivis-speech-pitch" value="0" min="-0.15" max="0.15" step="0.01">
+            <input type="number" id="aivis-speech-pitch-num" class="range-num" value="0" min="-0.15" max="0.15" step="0.01">
+          </div>
+          <div class="form-group">
+            <label for="aivis-speech-intonation"><span data-i18n="settings.tts.aivis.intonation">抑揚</span>: <span id="aivis-speech-intonation-val">1</span></label>
+            <input type="range" id="aivis-speech-intonation" value="1.0" min="0.0" max="2.0" step="0.1">
+            <input type="number" id="aivis-speech-intonation-num" class="range-num" value="1.0" min="0.0" max="2.0" step="0.1">
+          </div>
+          <span id="aivis-speech-status" style="display: block; margin-top: 6px; font-size: 12px;"></span>
+        </div>
+
+        <!-- Style-Bert-VITS2 Settings -->
+        <div id="style-bert-vits2-settings" class="section" style="display: none;">
+          <div class="section-title" data-i18n="settings.tts.sbv2.section">Style-Bert-VITS2設定</div>
+          <div class="form-group">
+            <label for="sbv2-url" data-i18n="settings.tts.sbv2.url">URL</label>
+            <input type="text" id="sbv2-url" value="http://127.0.0.1:5000">
+            <div class="hint" data-i18n="settings.tts.sbv2.urlHint">Style-Bert-VITS2サーバーのアドレス</div>
+          </div>
+          <div class="form-group">
+            <label for="sbv2-model-id" data-i18n="settings.tts.sbv2.modelId">モデルID</label>
+            <input type="number" id="sbv2-model-id" value="0" min="0">
+          </div>
+          <div class="form-group">
+            <label for="sbv2-speaker-id" data-i18n="settings.tts.sbv2.speakerId">話者ID</label>
+            <input type="number" id="sbv2-speaker-id" value="0" min="0">
+          </div>
+          <div class="form-group">
+            <label for="sbv2-style" data-i18n="settings.tts.sbv2.style">スタイル</label>
+            <input type="text" id="sbv2-style" value="Neutral">
+            <div class="hint" data-i18n="settings.tts.sbv2.styleHint">Neutral, Happy, Sad, Angry など</div>
+          </div>
+          <div class="form-group">
+            <label for="sbv2-style-weight" data-i18n="settings.tts.sbv2.styleWeight">スタイル強度</label>
+            <input type="range" id="sbv2-style-weight" value="5" min="0" max="20" step="0.5">
+            <input type="number" id="sbv2-style-weight-num" class="range-num" value="5" min="0" max="20" step="0.5">
+          </div>
+          <div class="form-group">
+            <label for="sbv2-language" data-i18n="settings.tts.sbv2.language">言語</label>
+            <select id="sbv2-language">
+              <option value="JP" selected data-i18n="settings.tts.sbv2.langJa">日本語</option>
+              <option value="EN" data-i18n="settings.tts.sbv2.langEn">英語</option>
+              <option value="ZH" data-i18n="settings.tts.sbv2.langZh">中国語</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="sbv2-speed" data-i18n="settings.tts.sbv2.speed">速度</label>
+            <input type="range" id="sbv2-speed" value="1.0" min="0.5" max="2.0" step="0.05">
+            <input type="number" id="sbv2-speed-num" class="range-num" value="1.0" min="0.5" max="2.0" step="0.05">
+          </div>
+          <button class="btn btn-secondary" id="sbv2-test" data-i18n="common.connecting">接続テスト</button>
+          <span id="sbv2-status" style="margin-left: 10px; font-size: 12px;"></span>
+        </div>
+
+        <!-- OpenAI互換TTS Settings -->
+        <div id="openai-compat-tts-settings" class="section" style="display: none;">
+          <div class="section-title" data-i18n="settings.tts.compat.section">OpenAI互換TTS設定</div>
+          <div class="form-group">
+            <label for="compat-tts-baseurl" data-i18n="settings.tts.compat.baseUrl">Base URL</label>
+            <input type="text" id="compat-tts-baseurl" placeholder="https://api.deepgram.com/v1/">
+            <div class="hint" data-i18n-html="settings.tts.compat.baseUrlHint">OpenAI互換のTTS APIエンドポイント。末尾の <code>/audio/speech</code> は不要</div>
+          </div>
+          <div class="form-group">
+            <label for="compat-tts-apikey" data-i18n="settings.tts.compat.apikey">APIキー</label>
+            <input type="password" id="compat-tts-apikey" placeholder="APIキー（不要な場合は空欄）" data-i18n-placeholder="settings.tts.compat.apikeyPlaceholder">
+          </div>
+          <div class="form-group">
+            <label for="compat-tts-model" data-i18n="settings.tts.compat.model">モデル</label>
+            <input type="text" id="compat-tts-model" value="tts-1" placeholder="tts-1">
+            <div class="hint" data-i18n="settings.tts.compat.modelHint">Deepgram: aura-2-thalia-en, Azure: v1, Kokoro: kokoro-82m</div>
+          </div>
+          <div class="form-group">
+            <label for="compat-tts-voice" data-i18n="settings.tts.compat.voice">Voice</label>
+            <input type="text" id="compat-tts-voice" value="alloy" placeholder="alloy">
+          </div>
+          <div class="form-group">
+            <label for="compat-tts-speed" data-i18n="settings.tts.compat.speed">速度</label>
+            <input type="range" id="compat-tts-speed" value="1.0" min="0.25" max="4.0" step="0.05">
+            <input type="number" id="compat-tts-speed-num" class="range-num" value="1.0" min="0.25" max="4.0" step="0.05">
+          </div>
+          <div class="hint" style="padding: 8px; background: var(--bg-hover); border-radius: 6px; margin-top: 8px;">
+            <span data-i18n="settings.tts.compat.servicesHint">対応サービス例: Deepgram, Azure Speech, Kokoro TTS (ローカル), Player2, unspeech proxy 等のOpenAI互換TTS API</span>
+          </div>
+        </div>
+
+        <!-- TTS Playground -->
+        <div class="section" id="tts-playground">
+          <div class="section-title" data-i18n="settings.tts.playground.section">音声合成プレイグラウンド</div>
+          <div class="form-group">
+            <label for="tts-test-text" data-i18n="settings.tts.playground.label">テスト用テキスト</label>
+            <textarea id="tts-test-text" rows="3" data-i18n-placeholder="settings.tts.playground.placeholder"></textarea>
+          </div>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <button class="btn btn-primary" id="tts-playground-play" style="flex: 1;" data-i18n-html="settings.tts.playground.play">
+              &#9654; テスト再生
+            </button>
+            <button class="btn btn-secondary" id="tts-playground-stop" data-i18n-html="settings.tts.playground.stop">
+              &#9632; 停止
+            </button>
+          </div>
+          <div id="tts-playground-status" class="status" style="margin-top: 10px;"></div>
+          <div class="hint" style="margin-top: 8px;" data-i18n="settings.tts.playground.hint">現在選択中のエンジンと設定でプレビュー再生します。エンジンや設定を変更後、保存してからテストしてください。</div>
+        </div>
+      </div>
+
+      <!-- ===== STTタブ ===== -->
+      <div id="tab-stt" class="tab-panel" role="tabpanel">
+        <div class="breadcrumb">
+          <button class="breadcrumb-back back-to-home">&#x276E;</button>
+          <span class="breadcrumb-text" data-i18n="settings.breadcrumb.settings">設定</span>
+          <span class="breadcrumb-current" data-i18n="settings.breadcrumb.stt">/ 音声認識</span>
+        </div>
+        <h2 class="content-header" data-i18n="settings.stt.title">音声入力（STT）</h2>
+
+        <div class="section">
+          <div class="section-title" data-i18n="settings.stt.section">音声認識</div>
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="stt-enabled" checked>
+              <span data-i18n="settings.stt.enable">音声入力を有効にする</span>
+            </label>
+          </div>
+          <div class="form-group">
+            <label for="stt-engine" data-i18n="settings.stt.engine">音声認識エンジン</label>
+            <select id="stt-engine">
+              <option value="whisper" data-i18n="settings.stt.engine.whisper">OpenAI Whisper（API・高精度）</option>
+              <option value="whisper-local" data-i18n="settings.stt.engine.whisperLocal">Whisper ローカル（無料・オフライン）</option>
+              <option value="web-speech" data-i18n="settings.stt.engine.webSpeech">Web Speech API（ブラウザ標準）</option>
+            </select>
+            <div class="hint" data-i18n="settings.stt.engineHint">Whisper: APIキー必要。ローカル: 初回にモデルDL（約40MB）。Web Speech: Electronでは動作しない場合あり</div>
+          </div>
+          <div class="form-group" id="stt-whisper-model-group" style="display: none;">
+            <label for="stt-whisper-model" data-i18n="settings.stt.whisperModel">Whisperモデル</label>
+            <select id="stt-whisper-model">
+              <option value="whisper-1" data-i18n="settings.stt.whisperModel.whisper1">whisper-1（標準）</option>
+              <option value="gpt-4o-transcribe" data-i18n="settings.stt.whisperModel.gpt4oTranscribe">gpt-4o-transcribe（高精度）</option>
+              <option value="gpt-4o-mini-transcribe" data-i18n="settings.stt.whisperModel.gpt4oMiniTranscribe">gpt-4o-mini-transcribe（高速・低コスト）</option>
+            </select>
+            <div class="hint" data-i18n="settings.stt.whisperModelHint">gpt-4o-transcribe: より高精度な文字起こし。mini: 低コスト版</div>
+          </div>
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="stt-auto-send">
+              <span data-i18n="settings.stt.autoSend">音声認識後に自動送信</span>
+            </label>
+            <div class="hint" data-i18n="settings.stt.autoSendHint">オンにすると、音声認識完了時に自動でメッセージを送信します</div>
+          </div>
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="stt-always-on">
+              <span data-i18n="settings.stt.alwaysOn">常時音声モード</span>
+            </label>
+            <div class="hint" data-i18n="settings.stt.alwaysOnHint">マイクが常に聞き取り状態になり、話すたびに自動で認識します（TTS再生中は一時停止）</div>
+          </div>
+          <div class="form-group">
+            <label for="stt-lang" data-i18n="settings.stt.lang">認識言語</label>
+            <select id="stt-lang">
+              <option value="ja-JP" data-i18n="settings.stt.lang.ja">日本語 (ja-JP)</option>
+              <option value="en-US" data-i18n="settings.stt.lang.enUS">英語・米国 (en-US)</option>
+              <option value="en-GB" data-i18n="settings.stt.lang.enGB">英語・英国 (en-GB)</option>
+              <option value="zh-CN" data-i18n="settings.stt.lang.zhCN">中国語・簡体字 (zh-CN)</option>
+              <option value="ko-KR" data-i18n="settings.stt.lang.koKR">韓国語 (ko-KR)</option>
+            </select>
+            <div class="hint" data-i18n="settings.stt.langHint">Whisper・Web Speech APIで使用する音声認識言語</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== キャラクタータブ ===== -->
+      <div id="tab-character" class="tab-panel" role="tabpanel">
+        <div class="breadcrumb">
+          <button class="breadcrumb-back back-to-home">&#x276E;</button>
+          <span class="breadcrumb-text" data-i18n="settings.breadcrumb.settings">設定</span>
+          <span class="breadcrumb-current" data-i18n="settings.breadcrumb.character">/ キャラクター</span>
+        </div>
+        <h2 class="content-header" data-i18n="settings.character.title">キャラクター設定</h2>
+
+        <div class="section">
+          <div class="section-title" data-i18n="settings.character.lipsync.section">リップシンク</div>
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="lipsync-enabled" checked>
+              <span data-i18n="settings.character.lipsync.enable">リップシンクを有効にする</span>
+            </label>
+          </div>
+          <div class="form-group">
+            <label for="lipsync-mode" data-i18n="settings.character.lipsync.mode">モード</label>
+            <select id="lipsync-mode">
+              <option value="phoneme" data-i18n="settings.character.lipsync.phoneme">音素解析（推奨）</option>
+              <option value="simple" data-i18n="settings.character.lipsync.simple">シンプル（疑似口パク）</option>
+              <option value="amplitude" data-i18n="settings.character.lipsync.amplitude">振幅解析（VOICEVOX使用時）</option>
+            </select>
+            <div class="hint" data-i18n="settings.character.lipsync.hint">音素解析はVOICEVOX使用時に正確、Web Speech時は推定で動作します</div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title" data-i18n="settings.character.preset.section">モデルプリセット</div>
+          <div class="form-group">
+            <label for="model-preset-select" data-i18n="settings.character.preset.label">保存済みプリセット</label>
+            <div class="inline-group">
+              <select id="model-preset-select" style="flex: 1;">
+                <option value="" data-i18n="settings.character.preset.select">-- 選択してください --</option>
+              </select>
+              <button class="btn btn-secondary" id="model-preset-load-btn" data-i18n="common.load">読込</button>
+              <button class="btn btn-danger" id="model-preset-delete-btn" data-i18n="common.delete">削除</button>
+            </div>
+          </div>
+          <div class="form-group" style="margin-top: 4px;">
+            <button class="btn btn-primary" id="model-preset-save-btn" data-i18n="settings.character.preset.save">現在の設定をプリセットとして保存</button>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title" data-i18n="settings.character.display.section">表示</div>
+          <div class="hint" style="margin-bottom: 16px;" data-i18n="settings.character.display.hint">
+            スライダーを動かすとリアルタイムでプレビュー表示されます
+          </div>
+
+          <div class="character-split">
+            <div class="character-split-settings">
+              <div class="form-group">
+                <label class="checkbox-label">
+                  <input type="checkbox" id="show-character-window" checked>
+                  <span data-i18n="settings.character.display.showWindow">デスクトップにキャラクターを表示</span>
+                </label>
+              </div>
+
+              <div class="form-group">
+                <label for="model-type" data-i18n="settings.character.display.modelType">モデルタイプ</label>
+                <select id="model-type">
+                  <option value="live2d">Live2D (.model3.json)</option>
+                  <option value="vrm">VRM 3D (.vrm)</option>
+                </select>
+              </div>
+
+              <div class="row">
+                <div class="form-group">
+                  <label for="win-width" data-i18n="settings.character.display.winWidth">ウィンドウ幅</label>
+                  <input type="number" id="win-width" value="300" min="100" max="800">
+                </div>
+                <div class="form-group">
+                  <label for="win-height" data-i18n="settings.character.display.winHeight">ウィンドウ高さ</label>
+                  <input type="number" id="win-height" value="200" min="100" max="800">
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="model-path" data-i18n="settings.character.display.modelPath">モデルパス</label>
+                <div class="model-path-row">
+                  <input type="text" id="model-path" placeholder="/live2d/runtime/model.model3.json">
+                  <button class="btn btn-secondary" id="browse-btn" data-i18n="common.browse">参照</button>
+                </div>
+                <div class="hint" id="model-path-hint" data-i18n="settings.character.display.modelPathHintLive2d">public/live2d/ 以下に配置したモデルの .model3.json パス</div>
+              </div>
+
+              <!-- 調整パッド（モデルパスの下） -->
+              <div class="form-group">
+                <div class="drag-pad-header">
+                  <label data-i18n="settings.character.display.dragPad">調整パッド</label>
+                  <div class="drag-pad-mode-toggle">
+                    <button class="drag-pad-mode-btn active" id="drag-pad-mode-position" data-mode="position" data-i18n="settings.character.display.padPosition">位置</button>
+                    <button class="drag-pad-mode-btn" id="drag-pad-mode-camera" data-mode="camera" data-i18n="settings.character.display.padCamera">カメラ</button>
+                  </div>
+                </div>
+                <div id="drag-pad-container">
+                  <div id="drag-pad">
+                    <div id="drag-pad-crosshair-h"></div>
+                    <div id="drag-pad-crosshair-v"></div>
+                    <div id="drag-pad-cursor"></div>
+                  </div>
+                  <div class="drag-pad-info">
+                    <div class="drag-pad-values">
+                      <label id="drag-pad-x-label">X</label>
+                      <input type="number" id="drag-pad-x-num" class="range-num" step="0.01" value="0">
+                      <label id="drag-pad-y-label">Y</label>
+                      <input type="number" id="drag-pad-y-num" class="range-num" step="0.01" value="0">
+                    </div>
+                    <div class="hint" id="drag-pad-hint" data-i18n="settings.character.display.padHintPosition">ドラッグ: X/Y ｜ ホイール: スケール</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Live2D専用設定 -->
+          <div id="live2d-model-settings">
+            <div class="form-group">
+              <label for="model-scale" data-i18n="settings.character.display.scale">スケール</label>
+              <input type="range" id="model-scale" value="0.2" min="0.05" max="3" step="0.01">
+              <input type="number" id="model-scale-num" class="range-num" value="0.2" min="0.05" max="3" step="0.01">
+            </div>
+
+            <div class="row">
+              <div class="form-group">
+                <label for="model-x" data-i18n="settings.character.display.xPos">X位置</label>
+                <input type="range" id="model-x" value="0.5" min="-0.5" max="1.5" step="0.01">
+                <input type="number" id="model-x-num" class="range-num" value="0.5" min="-0.5" max="1.5" step="0.01">
+              </div>
+              <div class="form-group">
+                <label for="model-y" data-i18n="settings.character.display.yPos">Y位置</label>
+                <input type="range" id="model-y" value="0.5" min="-0.5" max="1.5" step="0.01">
+                <input type="number" id="model-y-num" class="range-num" value="0.5" min="-0.5" max="1.5" step="0.01">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="resolution" data-i18n="settings.character.display.resolution">解像度</label>
+              <input type="range" id="resolution" value="2" min="1" max="4" step="0.5">
+              <input type="number" id="resolution-num" class="range-num" value="2" min="1" max="4" step="0.5">
+              <div class="hint" data-i18n="settings.character.display.resolutionHint">1=通常、2=高画質（推奨）、3-4=超高画質（変更時は再起動が必要）</div>
+            </div>
+
+            <div class="form-group">
+              <label for="fps" data-i18n="settings.character.display.fps">FPS上限</label>
+              <input type="range" id="fps" value="30" min="10" max="60" step="5">
+              <input type="number" id="fps-num" class="range-num" value="30" min="10" max="60" step="5">
+              <div class="hint" data-i18n="settings.character.display.fpsHint">低いほどCPU負荷が減る（15=省エネ、30=推奨、60=滑らか）</div>
+            </div>
+
+            <!-- アンカーは0.5固定（非表示） -->
+            <input type="hidden" id="anchor-x" value="0.5">
+            <input type="hidden" id="anchor-y" value="0.5">
+
+            <div class="form-group">
+              <label for="idle-motion" data-i18n="settings.character.display.idleMotion">待機モーション</label>
+              <div style="display: flex; gap: 6px; align-items: center;">
+                <select id="idle-motion" style="flex: 1;">
+                  <option value="">なし</option>
+                </select>
+                <button class="btn btn-secondary" id="idle-motion-browse" style="white-space: nowrap;" data-i18n="common.browse">参照</button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="tap-motion" data-i18n="settings.character.display.tapMotion">タップモーション</label>
+              <div style="display: flex; gap: 6px; align-items: center;">
+                <select id="tap-motion" style="flex: 1;">
+                  <option value="">なし</option>
+                </select>
+                <button class="btn btn-secondary" id="tap-motion-browse" style="white-space: nowrap;" data-i18n="common.browse">参照</button>
+              </div>
+            </div>
+
+            <div class="form-group" style="display: flex; align-items: center; justify-content: space-between;">
+              <label for="physics-enabled" style="margin-bottom: 0;" data-i18n="settings.character.display.physics">物理演算（髪・服の揺れ）</label>
+              <label class="toggle-switch">
+                <input type="checkbox" id="physics-enabled" checked>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+
+
+            <!-- モーション・表情テスト（動的生成） -->
+            <div id="motion-expression-test" class="section">
+              <div class="section-title" data-i18n="settings.character.motionTest.section">モーション・表情テスト</div>
+              <div id="motion-test-groups"></div>
+              <div id="motion-test-files"></div>
+              <div id="expression-test-area"></div>
+
+              <div style="font-size: 11px; color: var(--text-muted); margin-top: 10px; margin-bottom: 6px;" data-i18n="settings.character.motionTest.allMotions">モーション参照（全モデル）</div>
+              <div style="display: flex; gap: 6px; align-items: center;">
+                <select id="all-motions-select" style="flex: 1;">
+                  <option value="" data-i18n="settings.character.motionTest.selectMotion">-- モーションを選択 --</option>
+                </select>
+                <button class="btn btn-secondary" id="play-all-motion-btn" style="white-space: nowrap;" data-i18n="common.play">再生</button>
+              </div>
+
+              <div id="motion-test-empty" style="font-size: 12px; color: var(--text-muted); margin-top: 8px; display: none;"></div>
+            </div>
+
+            <!-- 状態モーション -->
+            <div class="section">
+              <div class="section-title" data-i18n="settings.character.stateMotion.section">状態モーション</div>
+              <div class="hint" style="margin-bottom: 12px;" data-i18n="settings.character.stateMotion.hint">会話中の各状態で再生するモーションを指定します（未設定時はidleを継続）</div>
+              <div id="state-motion-container"></div>
+            </div>
+
+            <!-- 感情マッピング -->
+            <div class="section">
+              <div class="section-title" data-i18n="settings.character.emotionMap.section">感情マッピング</div>
+              <div class="hint" style="margin-bottom: 12px;" data-i18n="settings.character.emotionMap.hint">各感情にモーションを割り当て、AIの感情タグを紐付けます</div>
+              <div id="emotion-map-container"></div>
+              <button class="btn btn-secondary" id="add-emotion-btn" style="margin-top: 8px;" data-i18n="settings.character.emotionMap.add">+ 感情を追加</button>
+            </div>
+          </div>
+
+          <!-- VRM専用設定 -->
+          <div id="vrm-model-settings" style="display:none">
+            <div class="form-group">
+              <label for="vrm-camera-distance" data-i18n="settings.character.vrm.cameraDistance">カメラ距離</label>
+              <input type="range" id="vrm-camera-distance" value="1.5" min="0.5" max="5" step="0.1">
+              <input type="number" id="vrm-camera-distance-num" class="range-num" value="1.5" min="0.5" max="5" step="0.1">
+              <div class="hint" data-i18n="settings.character.vrm.cameraDistanceHint">カメラとモデルの距離（小さいほどズーム）</div>
+            </div>
+
+            <div class="form-group">
+              <label for="vrm-camera-height" data-i18n="settings.character.vrm.cameraHeight">カメラ高さ</label>
+              <input type="range" id="vrm-camera-height" value="1.3" min="0" max="3" step="0.1">
+              <input type="number" id="vrm-camera-height-num" class="range-num" value="1.3" min="0" max="3" step="0.1">
+              <div class="hint" data-i18n="settings.character.vrm.cameraHeightHint">カメラの高さ（顔付近: 1.3、全身: 0.8）</div>
+            </div>
+
+            <div class="row">
+              <div class="form-group">
+                <label for="vrm-camera-angle-x" data-i18n="settings.character.vrm.cameraAngleX">カメラ水平角</label>
+                <input type="range" id="vrm-camera-angle-x" value="0" min="-180" max="180" step="1">
+                <input type="number" id="vrm-camera-angle-x-num" class="range-num" value="0" min="-180" max="180" step="1">
+              </div>
+              <div class="form-group">
+                <label for="vrm-camera-angle-y" data-i18n="settings.character.vrm.cameraAngleY">カメラ垂直角</label>
+                <input type="range" id="vrm-camera-angle-y" value="0" min="-60" max="60" step="1">
+                <input type="number" id="vrm-camera-angle-y-num" class="range-num" value="0" min="-60" max="60" step="1">
+              </div>
+            </div>
+            <div class="hint" style="margin-top: -8px; margin-bottom: 12px;" data-i18n="settings.character.vrm.cameraAngleHint">水平角: 左右の回転（-180~180°） ｜ 垂直角: 煽り/俯瞰（-60~60°）</div>
+
+            <div class="form-group">
+              <label for="vrm-light-intensity" data-i18n="settings.character.vrm.lightIntensity">照明強度</label>
+              <input type="range" id="vrm-light-intensity" value="1.0" min="0" max="5" step="0.01">
+              <input type="number" id="vrm-light-intensity-num" class="range-num" value="1.0" min="0" max="5" step="0.01">
+              <div class="hint" data-i18n="settings.character.vrm.lightIntensityHint">directional=1.8x, ambient=1.2x で適用</div>
+            </div>
+
+            <div class="form-group">
+              <label for="vrm-model-x" data-i18n="settings.character.vrm.modelX">キャラ位置 X</label>
+              <input type="range" id="vrm-model-x" value="0" min="-1" max="1" step="0.01">
+              <input type="number" id="vrm-model-x-num" class="range-num" value="0" min="-1" max="1" step="0.01">
+              <div class="hint" data-i18n="settings.character.vrm.modelXHint">左右のオフセット（-1:左 〜 1:右）</div>
+            </div>
+
+            <div class="form-group">
+              <label for="vrm-model-y" data-i18n="settings.character.vrm.modelY">キャラ位置 Y</label>
+              <input type="range" id="vrm-model-y" value="0" min="-1" max="1" step="0.01">
+              <input type="number" id="vrm-model-y-num" class="range-num" value="0" min="-1" max="1" step="0.01">
+              <div class="hint" data-i18n="settings.character.vrm.modelYHint">上下のオフセット（-1:下 〜 1:上）</div>
+            </div>
+          </div>
+        </div>
+
+
+        <!-- selfGrowth: 自己成長設定 -->
+        <div class="section">
+          <div class="section-title" style="display: flex; align-items: center; gap: 8px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10"/><path d="M12 12V6"/><path d="M16 2a6 6 0 0 1 6 6"/></svg>
+            <span data-i18n="settings.character.selfGrowth.section">自己成長（上級者設定）</span>
+          </div>
+          <div class="hint" style="margin-bottom: 12px;" data-i18n="settings.character.selfGrowth.desc">
+            会話を通じてコンパニオンが自分の性格・話し方を学習し、少しずつ変化していきます。
+            変更は事前に確認ダイアログで承認できます。
+          </div>
+
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="self-growth-enabled">
+              <span data-i18n="settings.character.selfGrowth.enable">自己成長を有効にする</span>
+            </label>
+            <div class="hint" data-i18n="settings.character.selfGrowth.enableHint">会話から性格・話し方の変化を検知して自動で反映します</div>
+          </div>
+
+          <div id="self-growth-details" style="display: none;">
+            <div class="form-group">
+              <label class="checkbox-label">
+                <input type="checkbox" id="self-growth-confirm" checked>
+                <span data-i18n="settings.character.selfGrowth.confirm">変更前に確認する</span>
+              </label>
+              <div class="hint" data-i18n="settings.character.selfGrowth.confirmHint">オフにすると確認なしで即座に反映されます</div>
+            </div>
+
+            <div class="form-group" style="margin-top: 12px;">
+              <label style="font-size: 13px; color: var(--text-secondary); margin-bottom: 6px; display: block;" data-i18n="settings.character.selfGrowth.allowLabel">変更を許可する項目</label>
+              <label class="checkbox-label" style="margin-bottom: 4px;">
+                <input type="checkbox" id="self-growth-traits" checked>
+                <span data-i18n="settings.character.selfGrowth.traits">性格（traits）</span>
+              </label>
+              <label class="checkbox-label" style="margin-bottom: 4px;">
+                <input type="checkbox" id="self-growth-speech" checked>
+                <span data-i18n="settings.character.selfGrowth.speech">話し方（speechStyle）</span>
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" id="self-growth-reactions" checked>
+                <span data-i18n="settings.character.selfGrowth.reactions">リアクション語彙</span>
+              </label>
+            </div>
+
+            <div class="form-group" style="margin-top: 16px;">
+              <label style="font-size: 13px; color: var(--text-secondary); margin-bottom: 6px; display: block;" data-i18n="settings.character.selfGrowth.history">変更履歴</label>
+              <div id="self-growth-history" style="max-height: 200px; overflow-y: auto; font-size: 12px; color: var(--text-muted); border: 1px solid var(--border); border-radius: 6px; padding: 8px;">
+                <div style="text-align: center; padding: 12px; opacity: 0.5;" data-i18n="settings.character.selfGrowth.noHistory">まだ変更はありません</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== OpenClawタブ ===== -->
+      <div id="tab-openclaw" class="tab-panel" role="tabpanel">
+        <div class="breadcrumb">
+          <button class="breadcrumb-back back-to-home">&#x276E;</button>
+          <span class="breadcrumb-text" data-i18n="settings.breadcrumb.settings">設定</span>
+          <span class="breadcrumb-current" data-i18n="settings.breadcrumb.openclaw">/ 連携</span>
+        </div>
+        <h2 class="content-header" data-i18n="settings.openclaw.title">連携設定</h2>
+
+        <div class="section">
+          <div class="section-title" data-i18n="settings.openclaw.section">OpenClaw</div>
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="openclaw-enabled">
+              <span data-i18n="settings.openclaw.enable">OpenClaw連携を有効にする</span>
+            </label>
+            <div class="hint" data-i18n="settings.openclaw.enableHint">有効にするとチャット画面にエージェントモード切替ボタンが表示されます</div>
+          </div>
+          <div id="openclaw-details" style="display: none;">
+            <hr class="section-divider">
+            <div class="form-group">
+              <label for="openclaw-gateway-url" data-i18n="settings.openclaw.gatewayUrl">ゲートウェイURL</label>
+              <input type="text" id="openclaw-gateway-url" value="http://127.0.0.1:18789">
+            </div>
+            <div class="form-group">
+              <label for="openclaw-token" data-i18n="settings.openclaw.token">認証トークン</label>
+              <input type="password" id="openclaw-token" placeholder="トークンを入力..." data-i18n-placeholder="settings.openclaw.tokenPlaceholder">
+            </div>
+            <div class="form-group">
+              <label for="openclaw-agent-id" data-i18n="settings.openclaw.agentId">エージェントID</label>
+              <input type="text" id="openclaw-agent-id" value="main">
+            </div>
+            <div class="form-group">
+              <label for="openclaw-max-tokens" data-i18n="settings.openclaw.maxTokens">出力トークン上限</label>
+              <input type="range" id="openclaw-max-tokens" value="2048" min="256" max="8192" step="256">
+              <input type="number" id="openclaw-max-tokens-num" class="range-num" value="2048" min="256" max="8192" step="256">
+            </div>
+            <div style="margin-top: 12px;">
+              <button class="btn btn-secondary" id="openclaw-test-btn" data-i18n="common.connecting">接続テスト</button>
+              <span id="openclaw-status" style="margin-left: 10px; font-size: 12px;"></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title" data-i18n="settings.openclaw.vrchat.section">VRChat</div>
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="vrchat-enabled">
+              <span data-i18n="settings.openclaw.vrchat.enable">VRChat OSC連携を有効にする</span>
+            </label>
+            <div class="hint" data-i18n="settings.openclaw.vrchat.enableHint">コンパニオンの発言・表情をVRChatに送信します（OSC必須）</div>
+          </div>
+          <div id="vrchat-details" style="display: none;">
+            <hr class="section-divider">
+            <div class="form-group">
+              <label for="vrchat-host" data-i18n="settings.openclaw.vrchat.host">ホスト</label>
+              <input type="text" id="vrchat-host" value="127.0.0.1" placeholder="127.0.0.1">
+            </div>
+            <div class="form-group">
+              <label for="vrchat-port" data-i18n="settings.openclaw.vrchat.port">送信ポート</label>
+              <input type="number" id="vrchat-port" value="9000" min="1" max="65535">
+              <div class="hint" data-i18n="settings.openclaw.vrchat.portHint">VRChatのOSC受信ポート（デフォルト: 9000）</div>
+            </div>
+            <hr class="section-divider">
+            <div class="form-group">
+              <label class="checkbox-label">
+                <input type="checkbox" id="vrchat-chatbox-enabled" checked>
+                <span data-i18n="settings.openclaw.vrchat.chatbox">チャットボックスに発言を表示</span>
+              </label>
+            </div>
+            <div class="form-group">
+              <label class="checkbox-label">
+                <input type="checkbox" id="vrchat-chatbox-sound">
+                <span data-i18n="settings.openclaw.vrchat.chatboxSound">チャットボックス通知音</span>
+              </label>
+            </div>
+            <hr class="section-divider">
+            <div class="form-group">
+              <label data-i18n="settings.openclaw.vrchat.audioSetup">VRChat音声セットアップ</label>
+              <div class="hint" data-i18n="settings.openclaw.vrchat.audioHint">コンパニオンの声をVRChat内で聞けるようにします。VB-CABLEが必要です。</div>
+              <div id="vrchat-audio-setup" style="margin-top: 8px; padding: 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-input);">
+                <div id="vrchat-audio-status" style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                  <span id="vrchat-audio-icon" style="font-size: 20px;">...</span>
+                  <span id="vrchat-audio-label" style="font-size: 13px; color: var(--text-secondary);">検出中...</span>
+                </div>
+                <div id="vrchat-audio-not-found" style="display: none;">
+                  <p style="font-size: 12px; color: var(--text-secondary); margin: 0 0 8px;" data-i18n="settings.openclaw.vrchat.vbcableNotInstalled">VB-CABLEがインストールされていません。無料の仮想オーディオドライバです。</p>
+                  <button class="btn btn-secondary" id="vrchat-install-vbcable" style="width: 100%;" data-i18n="settings.openclaw.vrchat.installVbcable">VB-CABLEをダウンロード＆インストール</button>
+                  <p style="font-size: 11px; color: var(--text-muted); margin: 6px 0 0;">インストール後、「再検出」を押してください</p>
+                  <button class="btn btn-secondary" id="vrchat-redetect-btn" style="margin-top: 6px; width: 100%;" data-i18n="settings.openclaw.vrchat.redetect">再検出</button>
+                </div>
+                <div id="vrchat-audio-found" style="display: none;">
+                  <p style="font-size: 12px; color: var(--success); margin: 0 0 8px;" data-i18n="settings.openclaw.vrchat.vbcableDetected">VB-CABLE検出済み。自動設定されています。</p>
+                  <p style="font-size: 11px; color: var(--text-muted); margin: 0 0 4px;">VRChat側の設定: マイクを「CABLE Output (VB-Audio Virtual Cable)」に変更してください</p>
+                  <div style="display: flex; gap: 8px; margin-top: 8px;">
+                    <button class="btn btn-secondary" id="vrchat-redetect-found-btn" style="flex: 1;" data-i18n="settings.openclaw.vrchat.redetect">再検出</button>
+                    <button class="btn btn-secondary" id="vrchat-manual-select-btn" style="flex: 1;" data-i18n="settings.openclaw.vrchat.manualSelect">手動選択</button>
+                  </div>
+                </div>
+                <div id="vrchat-audio-manual" style="display: none;">
+                  <select id="vrchat-audio-device" style="width: 100%; margin-bottom: 6px;">
+                    <option value="" data-i18n="settings.openclaw.vrchat.defaultDevice">デフォルト（変更しない）</option>
+                  </select>
+                  <div style="display: flex; gap: 8px;">
+                    <button class="btn btn-secondary" id="vrchat-refresh-devices" style="flex: 1;" data-i18n="settings.openclaw.vrchat.refreshDevices">デバイス更新</button>
+                    <button class="btn btn-secondary" id="vrchat-auto-detect-btn" style="flex: 1;" data-i18n="settings.openclaw.vrchat.autoDetect">自動検出に戻す</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <hr class="section-divider">
+            <div class="form-group">
+              <label class="checkbox-label">
+                <input type="checkbox" id="vrchat-expression-sync" checked>
+                <span data-i18n="settings.openclaw.vrchat.expressionSync">表情をアバターに同期</span>
+              </label>
+            </div>
+            <div class="form-group">
+              <label for="vrchat-expression-param-type" data-i18n="settings.openclaw.vrchat.paramType">パラメータ型</label>
+              <select id="vrchat-expression-param-type">
+                <option value="bool">Bool</option>
+                <option value="int">Int</option>
+                <option value="float">Float</option>
+              </select>
+              <div class="hint" data-i18n="settings.openclaw.vrchat.paramTypeHint">アバターの表情パラメータの型に合わせてください</div>
+            </div>
+            <div class="form-group">
+              <label data-i18n="settings.openclaw.vrchat.expressionMap">表情マッピング</label>
+              <div class="hint" data-i18n="settings.openclaw.vrchat.expressionMapHint">コンパニオンの表情名 → VRChatアバターのパラメータ名</div>
+              <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 8px;">
+                <div style="display: flex; gap: 8px; align-items: center;">
+                  <span style="width: 80px; font-size: 12px;">happy</span>
+                  <input type="text" id="vrchat-map-happy" value="Expression_Happy" style="flex: 1;">
+                </div>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                  <span style="width: 80px; font-size: 12px;">sad</span>
+                  <input type="text" id="vrchat-map-sad" value="Expression_Sad" style="flex: 1;">
+                </div>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                  <span style="width: 80px; font-size: 12px;">annoyed</span>
+                  <input type="text" id="vrchat-map-annoyed" value="Expression_Angry" style="flex: 1;">
+                </div>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                  <span style="width: 80px; font-size: 12px;">surprised</span>
+                  <input type="text" id="vrchat-map-surprised" value="Expression_Surprised" style="flex: 1;">
+                </div>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                  <span style="width: 80px; font-size: 12px;">thinking</span>
+                  <input type="text" id="vrchat-map-thinking" value="Expression_Thinking" style="flex: 1;">
+                </div>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                  <span style="width: 80px; font-size: 12px;">neutral</span>
+                  <input type="text" id="vrchat-map-neutral" value="" data-i18n-placeholder="settings.openclaw.vrchat.neutralPlaceholder" placeholder="（リセットのみ）" style="flex: 1;">
+                </div>
+              </div>
+            </div>
+            <hr class="section-divider">
+            <div class="form-group">
+              <label data-i18n="settings.openclaw.vrchat.overlay">VRオーバーレイ</label>
+              <div class="hint" data-i18n="settings.openclaw.vrchat.overlayHint">VR内に浮かべるコンパクトチャットウィンドウ（XSOverlay/OVRToolkit併用）</div>
+              <div style="margin-top: 8px; display: flex; gap: 8px;">
+                <button class="btn btn-secondary" id="vrchat-overlay-btn" data-i18n="settings.openclaw.vrchat.openOverlay">オーバーレイを開く</button>
+                <button class="btn btn-secondary" id="vrchat-test-btn" data-i18n="common.connecting">接続テスト</button>
+              </div>
+              <span id="vrchat-status" style="margin-left: 0; margin-top: 6px; display: block; font-size: 12px;"></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title" data-i18n="settings.claudecode.section">Claude Code モード</div>
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="claudecode-enabled">
+              <span data-i18n="settings.claudecode.enable">Claude Code CLIと直接会話する</span>
+            </label>
+            <div class="hint" data-i18n="settings.claudecode.enableHint">有効にすると、チャット・音声入力がこのPCで起動中のClaude Code CLIに直接繋がります。</div>
+          </div>
+          <div id="claudecode-status-row" style="margin-top: 8px; font-size: 12px; color: var(--text-muted);" data-i18n="settings.claudecode.status">
+            Claude Code CLIが起動している状態で使用してください。
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title" data-i18n="settings.externalApi.section">外部API連携（開発者向け）</div>
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="external-api-enabled">
+              <span data-i18n="settings.externalApi.enabled">外部からの音声リクエストを受け付ける</span>
+            </label>
+            <div class="hint" data-i18n="settings.externalApi.enableHint">外部スクリプトやツールからHTTPリクエストでELINOに読み上げさせることができます。開発者向け機能です。</div>
+          </div>
+          <div id="external-api-details" style="display: none; margin-top: 8px;">
+            <div class="form-group">
+              <label for="external-api-port" data-i18n="settings.externalApi.port">ポート番号</label>
+              <input type="number" id="external-api-port" value="5174" min="1024" max="65535" style="width: 120px;">
+            </div>
+            <div class="hint" data-i18n="settings.externalApi.hint">POST http://localhost:5174/speak {"text":"..."} で音声を鳴らせます</div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title"><span data-i18n="settings.webServer.section">Web版アクセス</span> <span style="font-size: 11px; color: #818cf8; font-weight: normal; margin-left: 6px; padding: 1px 8px; background: rgba(99,102,241,0.12); border-radius: 4px;" data-i18n="settings.common.wip">開発中</span></div>
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="web-server-enabled" checked>
+              <span data-i18n="settings.webServer.enabled">ブラウザからのアクセスを有効にする</span>
+            </label>
+            <div class="hint" data-i18n="settings.webServer.enableHint">有効にすると、ブラウザからELINOにアクセスできます。</div>
+          </div>
+          <div id="web-server-details" style="margin-top: 8px;">
+            <div class="form-group">
+              <label for="web-server-port" data-i18n="settings.webServer.port">ポート番号</label>
+              <input type="number" id="web-server-port" value="3939" min="1024" max="65535" style="width: 120px;">
+            </div>
+            <div class="hint" id="web-server-url-hint">http://localhost:3939 でブラウザからアクセスできます。</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== 記憶タブ ===== -->
+      <div id="tab-memory" class="tab-panel" role="tabpanel">
+        <div class="breadcrumb">
+          <button class="breadcrumb-back back-to-home">&#x276E;</button>
+          <span class="breadcrumb-text" data-i18n="settings.breadcrumb.settings">設定</span>
+          <span class="breadcrumb-current" data-i18n="settings.breadcrumb.memory">/ 記憶</span>
+        </div>
+        <h2 class="content-header" data-i18n="settings.memory.title">記憶管理</h2>
+
+        <!-- 概要 -->
+        <div class="section">
+          <div class="section-title" data-i18n="settings.memory.overview.section">概要</div>
+          <div id="memory-stats" style="font-size: 13px; color: var(--text-muted); line-height: 1.8;"></div>
+          <div style="margin-top: 8px; display: flex; gap: 8px;">
+            <button class="btn btn-secondary" id="memory-open-folder" data-i18n="settings.memory.overview.openFolder">フォルダを開く</button>
+            <button class="btn btn-secondary" id="memory-refresh" data-i18n="settings.memory.overview.refresh">更新</button>
+          </div>
+        </div>
+
+        <!-- 検索設定 -->
+        <div class="section">
+          <div class="section-title" data-i18n="settings.memory.search.section">検索設定</div>
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 0;">
+            <span style="font-size: 13px;" data-i18n="settings.memory.search.enable">会話時に記憶を参照する</span>
+            <label class="toggle-switch" style="flex-shrink: 0;">
+              <input type="checkbox" id="memory-search-enabled" checked>
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 0;">
+            <span style="font-size: 13px;" data-i18n="settings.memory.search.vector">ベクター検索（セマンティック記憶）</span>
+            <label class="toggle-switch" style="flex-shrink: 0;">
+              <input type="checkbox" id="memory-vector-enabled">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <div class="hint" data-i18n="settings.memory.search.vectorHint">初回ONにすると約125MBのモデルを自動ダウンロードします。以降はキャッシュ済みで不要。</div>
+        </div>
+
+        <!-- 記憶一覧 -->
+        <div class="section">
+          <div class="section-title" data-i18n="settings.memory.facts.section">記憶一覧（facts）</div>
+          <div style="margin-bottom: 8px;">
+            <input type="text" id="memory-search-input" placeholder="記憶を検索..." data-i18n-placeholder="settings.memory.facts.searchPlaceholder" style="width: 100%; padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-secondary); color: var(--text); font-size: 13px;">
+          </div>
+          <div id="memory-facts-list" style="max-height: 400px; overflow-y: auto;"></div>
+        </div>
+
+        <!-- サマリー -->
+        <div class="section">
+          <div class="section-title" data-i18n="settings.memory.summaries.section">会話サマリー</div>
+          <div id="memory-summaries-list"></div>
+        </div>
+      </div>
+
+      <!-- ===== 配信タブ ===== -->
+      <div id="tab-streaming" class="tab-panel" role="tabpanel">
+        <div class="breadcrumb">
+          <button class="breadcrumb-back back-to-home">&#x276E;</button>
+          <span class="breadcrumb-text" data-i18n="settings.breadcrumb.settings">設定</span>
+          <span class="breadcrumb-current" data-i18n="settings.breadcrumb.streaming">/ 配信</span>
+        </div>
+        <h2 class="content-header" data-i18n="settings.streaming.title">配信設定</h2>
+
+        <div class="section">
+          <div class="section-title" data-i18n="settings.streaming.section">配信モード</div>
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="streaming-enabled">
+              <span data-i18n="settings.streaming.enable">配信モードを有効にする</span>
+            </label>
+            <div class="hint" data-i18n="settings.streaming.enableHint">字幕表示とコメント連携機能を有効にします</div>
+          </div>
+        </div>
+
+        <div id="streaming-details" style="display: none;">
+
+          <div class="section">
+            <div class="section-title" data-i18n="settings.streaming.subtitle.section">字幕</div>
+            <div class="form-group">
+              <label class="checkbox-label">
+                <input type="checkbox" id="streaming-subtitle-enabled" checked>
+                <span data-i18n="settings.streaming.subtitle.enable">字幕を表示する</span>
+              </label>
+              <div class="hint" data-i18n="settings.streaming.subtitle.enableHint">キャラクターウィンドウの下部にAIの発話をリアルタイム表示します（OBSキャプチャ対応）</div>
+            </div>
+            <div class="form-group">
+              <label for="streaming-subtitle-fontsize" data-i18n="settings.streaming.subtitle.fontSize">フォントサイズ</label>
+              <input type="range" id="streaming-subtitle-fontsize" value="28" min="16" max="64" step="2">
+              <input type="number" id="streaming-subtitle-fontsize-num" class="range-num" value="28" min="16" max="64" step="2">
+            </div>
+            <div class="form-group">
+              <label for="streaming-subtitle-fade" data-i18n="settings.streaming.subtitle.fadeTime">フェード時間 (ms)</label>
+              <input type="number" id="streaming-subtitle-fade" value="3000" min="500" max="10000" step="500">
+              <div class="hint" data-i18n="settings.streaming.subtitle.fadeHint">発話終了後、字幕が消えるまでの時間</div>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title" data-i18n="settings.streaming.comment.section">コメントソース</div>
+            <div class="form-group">
+              <label for="streaming-comment-source" data-i18n="settings.streaming.comment.source">コメント取得元</label>
+              <select id="streaming-comment-source">
+                <option value="none" data-i18n="settings.streaming.comment.none">なし</option>
+                <option value="youtube" data-i18n="settings.streaming.comment.youtube">YouTube Live Chat</option>
+                <option value="onecomme" data-i18n="settings.streaming.comment.onecomme">OneComme (わんコメ)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- YouTube settings -->
+          <div id="streaming-youtube-settings" class="section" style="display: none;">
+            <div class="section-title" data-i18n="settings.streaming.youtube.section">YouTube Live Chat</div>
+            <div class="form-group">
+              <label for="streaming-youtube-video-id" data-i18n="settings.streaming.youtube.videoId">動画/配信ID</label>
+              <input type="text" id="streaming-youtube-video-id" placeholder="例: dQw4w9WgXcQ">
+              <div class="hint" data-i18n="settings.streaming.youtube.hint">YouTubeライブ配信URLの ?v= 以降の部分。Google APIキーはLLM設定のGeminiキーを共用します</div>
+            </div>
+            <div style="margin-top: 8px;">
+              <button class="btn btn-secondary" id="streaming-youtube-test" data-i18n="common.connecting">接続テスト</button>
+              <span id="streaming-youtube-status" style="margin-left: 10px; font-size: 12px;"></span>
+            </div>
+          </div>
+
+          <!-- OneComme settings -->
+          <div id="streaming-onecomme-settings" class="section" style="display: none;">
+            <div class="section-title" data-i18n="settings.streaming.onecomme.section">OneComme (わんコメ)</div>
+            <div class="form-group">
+              <label for="streaming-onecomme-port" data-i18n="settings.streaming.onecomme.port">ポート</label>
+              <input type="number" id="streaming-onecomme-port" value="11180" min="1024" max="65535">
+              <div class="hint" data-i18n="settings.streaming.onecomme.hint">OneCommeのWebSocketサーバーポート（デフォルト: 11180）</div>
+            </div>
+            <div style="margin-top: 8px;">
+              <button class="btn btn-secondary" id="streaming-onecomme-test" data-i18n="common.connecting">接続テスト</button>
+              <span id="streaming-onecomme-status" style="margin-left: 10px; font-size: 12px;"></span>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title" data-i18n="settings.streaming.filter.section">コメントフィルター</div>
+            <div class="form-group">
+              <label class="checkbox-label">
+                <input type="checkbox" id="streaming-filter-hash" checked>
+                <span data-i18n="settings.streaming.filter.hash"># で始まるコメントを無視</span>
+              </label>
+              <div class="hint" data-i18n="settings.streaming.filter.hashHint">ハッシュタグやコマンド系コメントをフィルタリングします</div>
+            </div>
+          </div>
+
+          <div class="section" id="broadcast-section">
+            <div class="section-title" data-i18n="settings.streaming.broadcast.section">コメント反応</div>
+            <div class="form-group">
+              <label class="checkbox-label">
+                <input type="checkbox" id="broadcast-mode-enabled">
+                <span data-i18n="settings.streaming.broadcast.enable">コメントに反応する</span>
+              </label>
+              <div class="hint" data-i18n="settings.streaming.broadcast.enableHint">オンにすると、リスナーのコメントに反応する配信キャラとして動作します</div>
+            </div>
+            <div id="broadcast-settings-group" style="display:none;">
+              <div class="form-group">
+                <label for="broadcast-comment-source" data-i18n="settings.streaming.broadcast.commentSource">コメント取得元</label>
+                <select id="broadcast-comment-source">
+                  <option value="none" data-i18n="settings.streaming.comment.none">なし</option>
+                  <option value="youtube">YouTube Live</option>
+                  <option value="onecomme">わんコメ</option>
+                </select>
+              </div>
+              <div class="form-group" id="broadcast-youtube-group" style="display:none;">
+                <label for="broadcast-youtube-id" data-i18n="settings.streaming.broadcast.youtubeId">YouTube 動画ID / URL</label>
+                <input type="text" id="broadcast-youtube-id" placeholder="動画IDまたはURL">
+                <div class="hint" data-i18n="settings.streaming.broadcast.youtubeHint">ライブ配信のURLまたは動画IDを入力</div>
+              </div>
+              <div class="form-group" id="broadcast-onecomme-group" style="display:none;">
+                <label for="broadcast-onecomme-port" data-i18n="settings.streaming.broadcast.onecommePort">わんコメ ポート</label>
+                <input type="number" id="broadcast-onecomme-port" value="11180" min="1" max="65535">
+              </div>
+              <div class="form-group">
+                <label class="checkbox-label">
+                  <input type="checkbox" id="broadcast-idle-enabled" checked>
+                  <span data-i18n="settings.streaming.broadcast.idle">アイドル時に自発発言する</span>
+                </label>
+                <div class="hint" data-i18n="settings.streaming.broadcast.idleHint">コメントが来ない時に自分から話しかけます</div>
+              </div>
+              <div class="form-group">
+                <label for="broadcast-idle-interval"><span data-i18n="settings.streaming.broadcast.idleInterval">自発発言間隔</span> <span class="range-num" id="broadcast-idle-interval-val">30<span data-i18n="settings.footer.idleIntervalSuffix">秒</span></span></label>
+                <input type="range" id="broadcast-idle-interval" min="10" max="120" step="5" value="30">
+                <div class="hint" data-i18n="settings.streaming.broadcast.idleIntervalHint">コメントが途切れた時、この間隔で自分から話します</div>
+              </div>
+              <div class="form-group">
+                <button id="broadcast-test-btn" class="btn btn-secondary" style="width:100%;" data-i18n="common.connecting">接続テスト</button>
+                <div id="broadcast-test-result" class="hint" style="margin-top:4px;"></div>
+              </div>
+
+              <div class="section-divider" style="margin:12px 0;border-top:1px solid var(--border-color);"></div>
+              <h4 style="margin:8px 0 4px;" data-i18n="settings.streaming.broadcast.safety">安全フィルタ</h4>
+              <div class="form-group" style="margin-bottom:12px;">
+                <label for="broadcast-custom-instructions" data-i18n="settings.streaming.broadcast.customInstructions">配信時の追加指示</label>
+                <textarea id="broadcast-custom-instructions" rows="4" placeholder="配信時にAIへ追加で伝える指示（例: ゲーム実況中です。〇〇というゲームをプレイ中）" data-i18n-placeholder="settings.streaming.broadcast.customInstructionsPlaceholder" style="width:100%;resize:vertical;font-size:13px;padding:6px;border-radius:6px;border:1px solid var(--border-color);background:var(--bg-secondary);color:var(--text-primary);"></textarea>
+                <div class="hint" data-i18n="settings.streaming.broadcast.customInstructionsHint">LLMへのシステムプロンプトに追加されます。何の配信かや特別なルールを書いてください。</div>
+              </div>
+              <div class="form-group">
+                <label for="broadcast-ng-words" data-i18n="settings.streaming.broadcast.ngWords">NGワード（完全ブロック）</label>
+                <textarea id="broadcast-ng-words" rows="3" placeholder="1行に1つずつ入力" data-i18n-placeholder="settings.streaming.broadcast.ngWordsPlaceholder" style="width:100%;resize:vertical;font-size:13px;padding:6px;border-radius:6px;border:1px solid var(--border-color);background:var(--bg-secondary);color:var(--text-primary);"></textarea>
+                <div class="hint" data-i18n="settings.streaming.broadcast.ngWordsHint">このワードを含むコメントは絶対に拾いません</div>
+              </div>
+              <div class="form-group">
+                <label for="broadcast-softblock-words" data-i18n="settings.streaming.broadcast.softblockWords">要注意ワード（優先度下げ）</label>
+                <textarea id="broadcast-softblock-words" rows="3" placeholder="1行に1つずつ入力" data-i18n-placeholder="settings.streaming.broadcast.ngWordsPlaceholder" style="width:100%;resize:vertical;font-size:13px;padding:6px;border-radius:6px;border:1px solid var(--border-color);background:var(--bg-secondary);color:var(--text-primary);"></textarea>
+                <div class="hint" data-i18n="settings.streaming.broadcast.softblockWordsHint">このワードを含むコメントは優先度を下げます（他にコメントがあればそちらを拾う）</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- ===== Footer ===== -->
+  <div class="footer">
+    <button class="btn btn-secondary" id="reset-btn" data-i18n="common.reset">デフォルトに戻す</button>
+    <button class="btn btn-secondary" id="cancel-btn" data-i18n="common.cancel">キャンセル</button>
+    <button class="btn btn-primary" id="save-btn" data-i18n="common.save">保存</button>
+  </div>
+
+  <div id="status" class="status"></div>
+  <div id="toast" class="toast" role="alert" aria-live="polite"></div>
+
+  <script type="module" src="settings.ts"></script>
+</body>
+
+</html>
