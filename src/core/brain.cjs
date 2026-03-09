@@ -348,11 +348,23 @@ function applyReflection(result, memoryV2, state) {
 
     const emotions = memoryV2.relationship?.emotions;
 
-    // emotionAdjustments: ±0.03 クランプ
+    // emotionAdjustments: 軸ごとにクランプ値を変える
+    // trust: ゆっくり動く（長期変数）、surprise: 大きく動いても自然、fatigue: 徐々に蓄積
+    const REFLECTION_CLAMP = {
+        valence:   0.06,
+        arousal:   0.10,
+        dominance: 0.05,
+        trust:     0.03,
+        surprise:  0.15,
+        fatigue:   0.04,
+        boredom:   0.06,
+        energy:    0.05,
+    };
     if (result.emotionAdjustments && emotions && emotions.current) {
         for (const [dim, adj] of Object.entries(result.emotionAdjustments)) {
             if (emotions.current[dim] !== undefined && typeof adj === 'number') {
-                const clamped = Math.max(-0.08, Math.min(0.08, adj));
+                const limit = REFLECTION_CLAMP[dim] || 0.06;
+                const clamped = Math.max(-limit, Math.min(limit, adj));
                 emotions.current[dim] = Math.max(0, Math.min(1, emotions.current[dim] + clamped));
             }
         }

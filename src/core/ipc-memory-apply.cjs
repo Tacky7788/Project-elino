@@ -127,13 +127,12 @@ function initializeEmotions(memoryV2, today, now) {
 // appraisal から感情を更新（emotionOnly / 通常パス共通）
 function applyAppraisal(emotions, appraisal, today, now) {
     const newDims = appraisal.emotionDimensions;
-    const smoothing = 0.3;
-
-    emotions.current.valence = updateDimension(emotions.current.valence, newDims.valence, smoothing);
-    emotions.current.arousal = updateDimension(emotions.current.arousal, newDims.arousal, smoothing);
-    emotions.current.dominance = updateDimension(emotions.current.dominance, newDims.dominance, smoothing);
-    emotions.current.trust = updateDimension(emotions.current.trust, newDims.trust, smoothing);
-    emotions.current.fatigue = updateDimension(emotions.current.fatigue, newDims.fatigue, smoothing);
+    // 軸ごとのsmoothing: trustは長期変数なのでゆっくり動かす
+    emotions.current.valence = updateDimension(emotions.current.valence, newDims.valence, 0.3);
+    emotions.current.arousal = updateDimension(emotions.current.arousal, newDims.arousal, 0.35);
+    emotions.current.dominance = updateDimension(emotions.current.dominance, newDims.dominance, 0.3);
+    emotions.current.trust = updateDimension(emotions.current.trust, newDims.trust, 0.12);
+    emotions.current.fatigue = updateDimension(emotions.current.fatigue, newDims.fatigue, 0.2);
 
     if (appraisal.needsImpact) {
         emotions.needs.connection = Math.max(0, Math.min(1, emotions.needs.connection + appraisal.needsImpact.connection));

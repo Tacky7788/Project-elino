@@ -77,6 +77,8 @@ async function brainTick() {
             emotions.lastExpression = expression;
             emotions.lastExpressionTime = Date.now();
             safeSend(_ctx.characterWindow, 'expression-change', expression);
+            // 表情変化時に感情を即時保存（クラッシュ時の取りこぼし防止）
+            markDirty('memory');
 
             // VRChat: 表情パラメータ同期
             const vrchatSettings = _ctx.getSettingsCache()?.vrchat;
