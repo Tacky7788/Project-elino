@@ -349,9 +349,16 @@ async function* streamChat({ provider, model, apiKey, systemPrompt, messages, ma
 
     console.log(`🔧 ${provider} stream: model=${model}, max_tokens=${maxTokens}`);
 
+    // Anthropic prompt caching: system promptをキャッシュ対象にする
+    const meta = PROVIDER_META[provider];
+    const isAnthropic = meta?.type === 'anthropic';
+    const systemOption = isAnthropic && systemPrompt
+        ? [{ type: 'text', text: systemPrompt, cacheControl: { type: 'ephemeral' } }]
+        : systemPrompt;
+
     const result = ai.streamText({
         model: providerInstance(model),
-        system: systemPrompt,
+        system: systemOption,
         messages: normalizedMessages,
         maxTokens,
         temperature,
@@ -372,9 +379,16 @@ async function generateText({ provider, model, apiKey, prompt, systemPrompt, max
 
     const messages = [{ role: 'user', content: prompt }];
 
+    // Anthropic prompt caching
+    const meta = PROVIDER_META[provider];
+    const isAnthropic = meta?.type === 'anthropic';
+    const systemOption = isAnthropic && systemPrompt
+        ? [{ type: 'text', text: systemPrompt, cacheControl: { type: 'ephemeral' } }]
+        : (systemPrompt || undefined);
+
     const result = await ai.generateText({
         model: providerInstance(model),
-        system: systemPrompt || undefined,
+        system: systemOption,
         messages,
         maxTokens,
         temperature,

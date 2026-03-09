@@ -174,6 +174,145 @@ function register(ipcMain, ctx) {
     });
 
     ipcMain.handle('get-app-version', () => app.getVersion());
+
+    // ====== Persona Export ======
+    ipcMain.handle('persona:export', async () => {
+        try {
+            const { getFilePaths } = constants;
+            const paths = getFilePaths();
+
+            // Read profile
+            let profile;
+            try {
+                profile = JSON.parse(await fs.readFile(paths.PROFILE_FILE, 'utf-8'));
+            } catch { return { success: false, error: 'プロフィールの読み込みに失敗しました' }; }
+
+            // Read personality
+            let personality;
+            try {
+                personality = JSON.parse(await fs.readFile(paths.PERSONALITY_FILE, 'utf-8'));
+            } catch { return { success: false, error: '人格データの読み込みに失敗しました' }; }
+
+            // Read personality.md if exists → freeEditPrompt
+            const mdPath = path.join(path.dirname(paths.PERSONALITY_FILE), 'personality.md');
+            try {
+                const mdContent = await fs.readFile(mdPath, 'utf-8');
+                if (mdContent.trim()) {
+                    personality.freeEditPrompt = mdContent;
+                }
+            } catch { /* personality.md doesn't exist, skip */ }
+
+            const defaultName = (profile.companionName || 'companion') + '-persona';
+            const result = await dialog.showSaveDialog({
+                title: '人格データをエクスポート',
+                defaultPath: `${defaultName}.json`,
+                filters: [{ name: 'ELINO Persona', extensions: ['json'] }]
+            });
+            if (result.canceled || !result.filePath) return { success: false, error: 'キャンセルされました' };
+
+            const exportData = {
+                formatVersion: 1,
+                type: 'elino-persona',
+                exportedAt: new Date().toISOString(),
+                persona: {
+                    name: profile.companionName || '',
+                    profile: {
+                        companionName: profile.companionName,
+                        callUser: profile.callUser,
+                        interests: profile.interests,
+                    },
+                    personality: personality,
+                }
+            };
+
+            await fs.writeFile(result.filePath, JSON.stringify(exportData, null, 2), 'utf-8');
+            return { success: true, filePath: result.filePath };
+        } catch (err) {
+            return { success: false, error: err.message };
+        }
+    });
+
+    // ====== Persona Import ======
+    ipcMain.handle('persona:import', async () => {
+        try {
+            const result = await dialog.showOpenDialog({
+                title: '人格データをインポート',
+                filters: [{ name: 'ELINO Persona', extensions: ['json'] }],
+                properties: ['openFile']
+            });
+            if (result.canceled || result.filePaths.length === 0) return { success: false, error: 'キャンセルされました' };
+
+            const raw = await fs.readFile(result.filePaths[0], 'utf-8');
+            const data = JSON.parse(raw);
+
+            // Validate
+            if (data.formatVersion !== 1 || data.type !== 'elino-persona' || !data.persona) {
+                return { success: false, error: 'invalidFile' };
+            }
+
+            const { persona } = data;
+            const personaName = persona.name || persona.profile?.companionName || 'Imported';
+
+            // Load active slots
+            let activeData;
+            try {
+                activeData = JSON.parse(await fs.readFile(constants.ACTIVE_SLOTS_FILE, 'utf-8'));
+            } catch {
+                return { success: false, error: 'スロットデータが見つかりません' };
+            }
+
+            // Create new slot
+            const slotId = `slot-${Date.now()}`;
+            const slotDir = path.join(SLOTS_DIR, slotId);
+            await fs.mkdir(slotDir, { recursive: true });
+
+            // Write profile
+            const profile = {
+                mode: 'private',
+                companionName: persona.profile?.companionName || personaName,
+                callUser: persona.profile?.callUser || '',
+                interests: persona.profile?.interests || [],
+            };
+            await fs.writeFile(path.join(slotDir, 'profile.json'), JSON.stringify(profile, null, 2), 'utf-8');
+
+            // Write personality
+            const personality = persona.personality || {};
+            await fs.writeFile(path.join(slotDir, 'personality.json'), JSON.stringify(personality, null, 2), 'utf-8');
+
+            // Write personality.md if freeEdit mode
+            if (personality.mode === 'freeEdit' && personality.freeEditPrompt) {
+                await fs.writeFile(path.join(slotDir, 'personality.md'), personality.freeEditPrompt, 'utf-8');
+            }
+
+            // Write default memory, state, history
+            const { DEFAULT_MEMORY_V2, DEFAULT_STATE } = constants;
+            await fs.writeFile(path.join(slotDir, 'memory.json'), JSON.stringify(JSON.parse(JSON.stringify(DEFAULT_MEMORY_V2)), null, 2), 'utf-8');
+            await fs.writeFile(path.join(slotDir, 'state.json'), JSON.stringify({ ...DEFAULT_STATE }, null, 2), 'utf-8');
+            await fs.writeFile(path.join(slotDir, 'history.jsonl'), '', 'utf-8');
+
+            // Add to active slots
+            const newSlot = {
+                id: slotId,
+                name: personaName,
+                presetBase: 'custom',
+                createdAt: new Date().toISOString()
+            };
+            activeData.slots.push(newSlot);
+            activeData.activeSlotId = slotId;
+            await fs.writeFile(constants.ACTIVE_SLOTS_FILE, JSON.stringify(activeData, null, 2), 'utf-8');
+
+            // Switch paths to new slot
+            constants.updateSlotPaths(slotId);
+
+            // Clear caches
+            setMemoryV2Cache(null);
+            setStateCache(null);
+
+            return { success: true, name: personaName };
+        } catch (err) {
+            return { success: false, error: err.message };
+        }
+    });
 }
 
 module.exports = { register };

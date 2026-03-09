@@ -92,7 +92,7 @@ async function createChatWindow() {
             devTools: isDev,
             nodeIntegration: false,
             contextIsolation: true,
-            sandbox: true,
+            sandbox: false, // AudioContext（リップシンク振幅解析）に必要
             preload: path.join(appRoot, 'preload.cjs')
         },
     });

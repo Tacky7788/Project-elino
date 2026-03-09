@@ -256,6 +256,10 @@ export async function createWebAdapter(): Promise<ElectronAPI> {
     exportData: () => ipc('export-data'),
     importData: () => ipc('import-data'),
 
+    // --- Persona Export/Import ---
+    personaExport: async () => ({ success: false, error: 'Not available on web' }),
+    personaImport: async () => ({ success: false, error: 'Not available on web' }),
+
     // --- Update ---
     checkForUpdates: () => ipc('check-for-updates'),
     getAppVersion: () => ipc('get-app-version'),

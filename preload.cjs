@@ -290,6 +290,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
   exportData: () => ipcRenderer.invoke('export-data'),
   importData: () => ipcRenderer.invoke('import-data'),
 
+  // Persona Export/Import
+  personaExport: () => ipcRenderer.invoke('persona:export'),
+  personaImport: () => ipcRenderer.invoke('persona:import'),
+
   // Update Check
   checkForUpdates: () => ipcRenderer.invoke('check-for-updates'),
   getAppVersion: () => ipcRenderer.invoke('get-app-version'),

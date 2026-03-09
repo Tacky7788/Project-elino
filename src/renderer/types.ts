@@ -622,6 +622,9 @@ export interface ElectronAPI {
   // Data Export/Import
   exportData: () => Promise<{ success: boolean; filePath?: string; error?: string }>;
   importData: () => Promise<{ success: boolean; error?: string }>;
+  // Persona Export/Import
+  personaExport: () => Promise<{ success: boolean; filePath?: string; error?: string }>;
+  personaImport: () => Promise<{ success: boolean; name?: string; error?: string }>;
   // Update Check
   checkForUpdates: () => Promise<{ hasUpdate: boolean; currentVersion: string; latestVersion?: string; releaseUrl?: string; error?: string }>;
   getAppVersion: () => Promise<string>;

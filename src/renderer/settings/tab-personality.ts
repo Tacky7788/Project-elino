@@ -36,6 +36,8 @@ let slotDuplicateBtn: HTMLButtonElement;
 let slotCreateBtn: HTMLButtonElement;
 let slotRenameBtn: HTMLButtonElement;
 let slotDeleteBtn: HTMLButtonElement;
+let personaExportBtn: HTMLButtonElement;
+let personaImportBtn: HTMLButtonElement;
 let companionNameInput: HTMLInputElement;
 let callUserInput: HTMLInputElement;
 let userNameSettingInput: HTMLInputElement;
@@ -356,6 +358,32 @@ function initSlotEvents() {
       await loadSlots();
     } catch (err) { showStatus(t('settings.personality.slots.deleteFailed', { error: String(err) }), 'error'); }
   });
+
+  personaExportBtn.addEventListener('click', async () => {
+    try {
+      const result = await platform.personaExport();
+      if (result.success) {
+        showToast(t('settings.personality.persona.exported'));
+      } else if (result.error && result.error !== 'キャンセルされました') {
+        showStatus(result.error, 'error');
+      }
+    } catch (err) { showStatus(String(err), 'error'); }
+  });
+
+  personaImportBtn.addEventListener('click', async () => {
+    try {
+      const result = await platform.personaImport();
+      if (result.success) {
+        showToast(t('settings.personality.persona.imported', { name: result.name || '' }));
+        await loadSlots();
+        await loadBasicSettings();
+      } else if (result.error === 'invalidFile') {
+        showStatus(t('settings.personality.persona.invalidFile'), 'error');
+      } else if (result.error && result.error !== 'キャンセルされました') {
+        showStatus(result.error, 'error');
+      }
+    } catch (err) { showStatus(String(err), 'error'); }
+  });
 }
 
 export async function initTab(settings: Settings): Promise<void> {
@@ -391,6 +419,8 @@ export async function initTab(settings: Settings): Promise<void> {
   slotCreateBtn = document.getElementById('slot-create-btn') as HTMLButtonElement;
   slotRenameBtn = document.getElementById('slot-rename-btn') as HTMLButtonElement;
   slotDeleteBtn = document.getElementById('slot-delete-btn') as HTMLButtonElement;
+  personaExportBtn = document.getElementById('persona-export-btn') as HTMLButtonElement;
+  personaImportBtn = document.getElementById('persona-import-btn') as HTMLButtonElement;
   companionNameInput = document.getElementById('companion-name') as HTMLInputElement;
   callUserInput = document.getElementById('call-user') as HTMLInputElement;
   userNameSettingInput = document.getElementById('user-name-setting') as HTMLInputElement;

@@ -18,9 +18,13 @@
 
 ---
 
-Imagine an AI character living on your desktop -- one that remembers your conversations from weeks ago, and occasionally talks to you just because it noticed you've been quiet for a while.
+ELINO is an AI companion that lives on your desktop. It renders Live2D/VRM models, connects to the LLM of your choice, and talks with you.
 
-ELINO is a desktop companion built on Electron. It renders Live2D or VRM models directly on your desktop, connects to the LLM of your choice, and develops a persistent memory of who you are. It's not a chatbot in a browser tab. It's something that stays with you.
+What sets it apart is memory designed to feel human. Facts, conversation summaries, relationship changes, emotional shifts -- all stored locally, recalled naturally through a forgetting curve. It remembers conversations from weeks ago, and notices when you've been quiet.
+
+Not a chatbot in a browser tab. Something that stays with you.
+
+> **Note:** ELINO is still in active development. Feedback, bug reports, and feature suggestions are very welcome -- feel free to open an [issue](https://github.com/Tacky7788/Project-elino/issues) or start a [discussion](https://github.com/Tacky7788/Project-elino/discussions).
 
 ## What Makes ELINO Different
 
