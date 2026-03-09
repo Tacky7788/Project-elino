@@ -96,6 +96,8 @@ function startWebServer(port, options = {}) {
     ws.on('message', async (raw) => {
       try {
         const { event, data } = JSON.parse(raw);
+        // ホワイトリストチェック
+        if (!ALLOWED_API_CHANNELS.has(event)) return;
         // send系のIPC（fire-and-forget）
         const handler = sendListeners.get(event);
         if (handler) {
@@ -134,11 +136,41 @@ function startWebServer(port, options = {}) {
   return { server, wss, broadcast, wsClients };
 }
 
+// Web API で公開を許可するIPCチャンネルのホワイトリスト
+// 内部操作（get-memory, save-settings等）は公開しない
+const ALLOWED_API_CHANNELS = new Set([
+  // 会話系
+  'llm:stream',
+  'get-profile',
+  'get-personality',
+  'get-state',
+  'get-emotion-state',
+  // 設定読み取り（書き込みは不可）
+  'get-settings',
+  'get-config',
+  // チャット制御
+  'toggle-chat',
+  'open-chat',
+  'close-chat',
+  // TTS
+  'tts:openai-synthesize',
+  'voicevox:synthesize',
+  // バージョン
+  'get-app-version',
+]);
+
 // API リクエスト処理
 async function handleApiRequest(req, res, url) {
   // /api/channel/name → channel:name
   const routePath = url.pathname.slice(5); // '/api/' を除去
   const channel = routePath.replace(/\//g, ':').replace(/:$/, '');
+
+  // ホワイトリストチェック
+  if (!ALLOWED_API_CHANNELS.has(channel)) {
+    res.writeHead(403, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: `Access denied: ${channel}` }));
+    return;
+  }
 
   // GETリクエストのクエリパラメータ
   const queryParams = Object.fromEntries(url.searchParams);

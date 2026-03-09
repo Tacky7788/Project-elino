@@ -167,11 +167,18 @@ function register(ipcMain, ctx) {
                         if (err) return reject(err);
                         zipfile.readEntry();
                         zipfile.on('entry', (entry) => {
+                            // path traversal防止: 展開先がdestDir内に収まることを確認
+                            const resolvedPath = path.resolve(destDir, entry.fileName);
+                            if (!resolvedPath.startsWith(path.resolve(destDir) + path.sep) && resolvedPath !== path.resolve(destDir)) {
+                                console.warn(`⚠️ ZIP path traversal blocked: ${entry.fileName}`);
+                                zipfile.readEntry();
+                                return;
+                            }
                             if (/\/$/.test(entry.fileName)) {
-                                fsSync.mkdirSync(path.join(destDir, entry.fileName), { recursive: true });
+                                fsSync.mkdirSync(resolvedPath, { recursive: true });
                                 zipfile.readEntry();
                             } else {
-                                const filePath = path.join(destDir, entry.fileName);
+                                const filePath = resolvedPath;
                                 fsSync.mkdirSync(path.dirname(filePath), { recursive: true });
                                 zipfile.openReadStream(entry, (err2, stream) => {
                                     if (err2) return reject(err2);

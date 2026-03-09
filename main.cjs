@@ -215,26 +215,28 @@ async function loadConfig() {
     return fileConfig;
 }
 
+// deep merge: デフォルト設定にユーザー設定を再帰的にマージ
+function deepMerge(defaults, saved) {
+    const result = { ...defaults };
+    for (const key of Object.keys(saved)) {
+        if (saved[key] !== undefined) {
+            if (typeof defaults[key] === 'object' && defaults[key] !== null && !Array.isArray(defaults[key])
+                && typeof saved[key] === 'object' && saved[key] !== null && !Array.isArray(saved[key])) {
+                result[key] = deepMerge(defaults[key], saved[key]);
+            } else {
+                result[key] = saved[key];
+            }
+        }
+    }
+    return result;
+}
+
 async function loadSettings() {
     if (_settingsCache) return _settingsCache;
     try {
         const data = await fs.readFile(SETTINGS_FILE, 'utf-8');
         const saved = JSON.parse(data);
-        const merged = { ...DEFAULT_SETTINGS };
-        for (const key of Object.keys(DEFAULT_SETTINGS)) {
-            if (saved[key] !== undefined) {
-                if (typeof DEFAULT_SETTINGS[key] === 'object' && DEFAULT_SETTINGS[key] !== null && !Array.isArray(DEFAULT_SETTINGS[key])) {
-                    merged[key] = { ...DEFAULT_SETTINGS[key], ...saved[key] };
-                } else {
-                    merged[key] = saved[key];
-                }
-            }
-        }
-        for (const key of Object.keys(saved)) {
-            if (merged[key] === undefined) {
-                merged[key] = saved[key];
-            }
-        }
+        const merged = deepMerge(DEFAULT_SETTINGS, saved);
         _settingsCache = merged;
         return merged;
     } catch (err) {
@@ -273,19 +275,31 @@ async function loadMemoryV2() {
     try {
         const data = await fs.readFile(getFilePaths().MEMORY_V2_FILE, 'utf-8');
         const saved = JSON.parse(data);
-        if (saved.relationship?.emotions?.current) {
-            const cur = saved.relationship.emotions.current;
-            if (cur.energy === undefined) cur.energy = 0.8;
-            if (cur.boredom === undefined) cur.boredom = 0.0;
-        }
-        if (saved.relationship?.emotions && saved.relationship.emotions.dominantEmotion === undefined) {
-            saved.relationship.emotions.dominantEmotion = null;
-            saved.relationship.emotions.dominantEmotionExpiry = null;
-        }
-        return saved;
+        // デフォルトスキーマとdeep merge（新フィールド追加時に自動補完）
+        // 配列フィールドは保存値を優先（デフォルトの空配列で上書きしない）
+        const defaults = JSON.parse(JSON.stringify(DEFAULT_MEMORY_V2));
+        return deepMergeMemory(defaults, saved);
     } catch (err) {
         return JSON.parse(JSON.stringify(DEFAULT_MEMORY_V2));
     }
+}
+
+// memoryV2用deep merge: 配列は保存値優先、オブジェクトは再帰マージ
+function deepMergeMemory(defaults, saved) {
+    const result = { ...defaults };
+    for (const key of Object.keys(saved)) {
+        if (saved[key] === undefined) continue;
+        if (Array.isArray(saved[key])) {
+            // 配列は保存値をそのまま使う（デフォルトの空配列で上書きしない）
+            result[key] = saved[key];
+        } else if (typeof defaults[key] === 'object' && defaults[key] !== null
+            && typeof saved[key] === 'object' && saved[key] !== null) {
+            result[key] = deepMergeMemory(defaults[key], saved[key]);
+        } else {
+            result[key] = saved[key];
+        }
+    }
+    return result;
 }
 
 async function loadMemoryV2Cached() {
@@ -503,9 +517,28 @@ registerTtsHandlers(ipcMain, { loadConfig, loadSettings });
 
 // ====== External API（ClaudeCode TTS連携） ======
 let externalApiServer = null;
+let _externalApiToken = null;
+
+function generateApiToken() {
+    return require('crypto').randomBytes(32).toString('hex');
+}
+
 function startExternalApiServer(port) {
     if (externalApiServer) { externalApiServer.close(); externalApiServer = null; }
+    // 起動時にトークン生成（毎回変わる）
+    _externalApiToken = generateApiToken();
+    console.log(`[External API] token generated (use Authorization: Bearer <token>)`);
+
     externalApiServer = http.createServer((req, res) => {
+        // トークン認証
+        const authHeader = req.headers['authorization'] || '';
+        const token = authHeader.replace(/^Bearer\s+/i, '');
+        if (token !== _externalApiToken) {
+            res.writeHead(401, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'unauthorized' }));
+            return;
+        }
+
         if (req.method === 'POST' && req.url === '/speak') {
             let body = '';
             req.on('data', chunk => body += chunk);
@@ -537,8 +570,11 @@ function startExternalApiServer(port) {
 
 ipcMain.on('external-api:update', (_, { enabled, port }) => {
     if (enabled) startExternalApiServer(port);
-    else if (externalApiServer) { externalApiServer.close(); externalApiServer = null; }
+    else if (externalApiServer) { externalApiServer.close(); externalApiServer = null; _externalApiToken = null; }
 });
+
+// External APIトークン取得（設定画面やClaude Code bridgeから使用）
+ipcMain.handle('external-api:get-token', () => _externalApiToken);
 
 ipcExport.register(ipcMain, ctx);
 ipcFile.register(ipcMain, ctx);
@@ -601,11 +637,18 @@ async function extractZipToDir(zipPath, destDir) {
             if (err) return reject(err);
             zipfile.readEntry();
             zipfile.on('entry', (entry) => {
+                // path traversal防止
+                const resolvedPath = path.resolve(destDir, entry.fileName);
+                if (!resolvedPath.startsWith(path.resolve(destDir) + path.sep) && resolvedPath !== path.resolve(destDir)) {
+                    console.warn(`⚠️ ZIP path traversal blocked: ${entry.fileName}`);
+                    zipfile.readEntry();
+                    return;
+                }
                 if (/\/$/.test(entry.fileName)) {
-                    fsSync.mkdirSync(path.join(destDir, entry.fileName), { recursive: true });
+                    fsSync.mkdirSync(resolvedPath, { recursive: true });
                     zipfile.readEntry();
                 } else {
-                    const filePath = path.join(destDir, entry.fileName);
+                    const filePath = resolvedPath;
                     fsSync.mkdirSync(path.dirname(filePath), { recursive: true });
                     zipfile.openReadStream(entry, (err2, stream) => {
                         if (err2) return reject(err2);
@@ -757,15 +800,19 @@ app.whenReady().then(async () => {
         startExternalApiServer(settings.externalApi.port || 5174);
     }
 
-    // Web Server起動（ブラウザからlocalhost経由でアクセス可能）
-    const webPort = settings.webServer?.port || 3939;
-    const staticDir = isDev ? null : path.join(__dirname, 'dist', 'renderer');
-    const webServer = startWebServer(webPort, {
-        staticDir,
-        getWindows: () => ({ characterWindow, chatWindow, settingsWindow, vrOverlayWindow }),
-    });
-    // mainプロセスからWebクライアントへのイベント転送
-    ctx.webBroadcast = webServer.broadcast;
+    // Web Server起動（設定で有効な場合のみ）
+    if (settings.webServer?.enabled) {
+        const webPort = settings.webServer?.port || 3939;
+        const staticDir = isDev ? null : path.join(__dirname, 'dist', 'renderer');
+        const webServer = startWebServer(webPort, {
+            staticDir,
+            getWindows: () => ({ characterWindow, chatWindow, settingsWindow, vrOverlayWindow }),
+        });
+        // mainプロセスからWebクライアントへのイベント転送
+        ctx.webBroadcast = webServer.broadcast;
+    } else {
+        ctx.webBroadcast = () => {}; // noop
+    }
 });
 
 // ====== 終了処理 ======
