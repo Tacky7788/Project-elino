@@ -527,7 +527,14 @@ function startExternalApiServer(port) {
     if (externalApiServer) { externalApiServer.close(); externalApiServer = null; }
     // 起動時にトークン生成（毎回変わる）
     _externalApiToken = generateApiToken();
-    console.log(`[External API] token generated (use Authorization: Bearer <token>)`);
+    // トークンをファイルに書き出し（外部ツールから読み取り用）
+    const tokenPath = path.join(app.getPath('userData'), 'external-api-token.txt');
+    try {
+        fsSync.writeFileSync(tokenPath, _externalApiToken, 'utf-8');
+        console.log(`[External API] token saved to ${tokenPath}`);
+    } catch (e) {
+        console.error('[External API] failed to save token:', e.message);
+    }
 
     externalApiServer = http.createServer((req, res) => {
         // トークン認証
@@ -570,7 +577,11 @@ function startExternalApiServer(port) {
 
 ipcMain.on('external-api:update', (_, { enabled, port }) => {
     if (enabled) startExternalApiServer(port);
-    else if (externalApiServer) { externalApiServer.close(); externalApiServer = null; _externalApiToken = null; }
+    else if (externalApiServer) {
+        externalApiServer.close(); externalApiServer = null; _externalApiToken = null;
+        // トークンファイル削除
+        try { fsSync.unlinkSync(path.join(app.getPath('userData'), 'external-api-token.txt')); } catch {}
+    }
 });
 
 // External APIトークン取得（設定画面やClaude Code bridgeから使用）
@@ -801,19 +812,28 @@ app.whenReady().then(async () => {
     }
 
     // Web Server起動（設定で有効な場合のみ）
+    startOrStopWebServer(settings);
+});
+
+let _webServerInstance = null;
+function startOrStopWebServer(settings) {
     if (settings.webServer?.enabled) {
+        if (_webServerInstance) { _webServerInstance.server.close(); _webServerInstance = null; }
         const webPort = settings.webServer?.port || 3939;
         const staticDir = isDev ? null : path.join(__dirname, 'dist', 'renderer');
-        const webServer = startWebServer(webPort, {
+        _webServerInstance = startWebServer(webPort, {
             staticDir,
             getWindows: () => ({ characterWindow, chatWindow, settingsWindow, vrOverlayWindow }),
         });
-        // mainプロセスからWebクライアントへのイベント転送
-        ctx.webBroadcast = webServer.broadcast;
+        ctx.webBroadcast = _webServerInstance.broadcast;
     } else {
-        ctx.webBroadcast = () => {}; // noop
+        if (_webServerInstance) { _webServerInstance.server.close(); _webServerInstance = null; }
+        ctx.webBroadcast = () => {};
     }
-});
+}
+
+// 設定変更時にWeb Serverを再起動/停止するためにctxに公開
+ctx.startOrStopWebServer = startOrStopWebServer;
 
 // ====== 終了処理 ======
 

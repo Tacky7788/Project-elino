@@ -316,6 +316,11 @@ function register(ipcMain, ctx) {
         // 配信モード更新
         await updateStreamingMode(settings);
 
+        // Web Server: 設定変更時に起動/停止
+        if (ctx.startOrStopWebServer) {
+            ctx.startOrStopWebServer(settings);
+        }
+
         // VRChat OSC: 設定変更時に接続/切断/再接続
         try {
             const oscClient = require('./osc-client.cjs');

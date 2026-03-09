@@ -834,7 +834,7 @@ export const ja: Record<string, string> = {
   'settings.externalApi.enabled': '外部からの音声リクエストを受け付ける',
   'settings.externalApi.enableHint': '外部スクリプトやツールからHTTPリクエストでELINOに読み上げさせることができます。開発者向け機能です。',
   'settings.externalApi.port': 'ポート番号',
-  'settings.externalApi.hint': 'POST http://localhost:5174/speak {"text":"..."} で音声を鳴らせます',
+  'settings.externalApi.hint': 'POST http://localhost:5174/speak に Authorization: Bearer <token> を付けてください。トークンは %APPDATA%/elino/external-api-token.txt に保存されます',
 
   // ===== Settings: Web Server =====
   'settings.common.wip': '開発中',

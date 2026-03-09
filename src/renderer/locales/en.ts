@@ -843,5 +843,5 @@ export const en: Record<string, string> = {
   'settings.externalApi.enabled': 'Accept voice requests from external tools',
   'settings.externalApi.enableHint': 'Allows external scripts and tools to trigger speech via HTTP requests. For developers.',
   'settings.externalApi.port': 'Port',
-  'settings.externalApi.hint': 'POST http://localhost:5174/speak {"text":"..."} to trigger speech',
+  'settings.externalApi.hint': 'POST http://localhost:5174/speak with Authorization: Bearer <token>. Token is saved to %APPDATA%/elino/external-api-token.txt',
 };
