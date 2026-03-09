@@ -540,7 +540,7 @@ function scoreComment(comment, memoryV2, allComments) {
     if (IMPACT_WORDS.some(w => text.includes(w))) score += 1;
 
     // キャラ名や最近の話題に言及 → スコアUP
-    const recentTopics = Object.keys(memoryV2?.topics || {}).slice(0, 5);
+    const recentTopics = (memoryV2?.topics?.recent || []).slice(0, 5);
     if (recentTopics.some(t => text.includes(t))) score += 1.5;
 
     // 連投ペナルティ（同じ人ばかり拾わない）
@@ -584,15 +584,17 @@ function getDynamicBroadcastPatience(baseInterval) {
 
 function decideBroadcastAction(commentQueue, silenceSeconds, state, broadcastIdleConfig, memoryV2, proactiveLevel) {
     // 1. 未処理コメントがある → スコアリング + 安全フィルタ
-    if (commentQueue && commentQueue.length > 0) {
+    // inflightコメント（応答中）は除外
+    const availableComments = commentQueue ? commentQueue.filter(c => !c.inflight) : [];
+    if (availableComments.length > 0) {
         // コメント密度追跡
         const now = Date.now();
-        commentQueue.forEach(c => {
+        availableComments.forEach(c => {
             if (c.timestamp) _recentCommentTimestamps.push(new Date(c.timestamp).getTime());
             else _recentCommentTimestamps.push(now);
         });
 
-        const scored = commentQueue.map(c => ({ ...c, score: scoreComment(c, memoryV2, commentQueue) }));
+        const scored = availableComments.map(c => ({ ...c, score: scoreComment(c, memoryV2, availableComments) }));
         // hardblockされたコメント（score=-999）を除外
         const safe = scored.filter(c => c.score > -100);
         safe.sort((a, b) => b.score - a.score);

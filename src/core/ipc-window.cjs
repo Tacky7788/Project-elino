@@ -241,6 +241,12 @@ function register(ipcMain, ctx) {
     ipcMain.on('brain:set-state', (event, updates) => {
         if (updates.doNotDisturb !== undefined) transientState.doNotDisturb = updates.doNotDisturb;
         if (updates.isMicListening !== undefined) transientState.isMicListening = updates.isMicListening;
+        // broadcastコメント応答完了 → inflightコメントをキューから削除
+        if (updates.commentsDone && Array.isArray(updates.commentsDone) && _ctx) {
+            const doneIds = new Set(updates.commentsDone);
+            const currentQueue = _ctx.getBroadcastQueue();
+            _ctx.setBroadcastQueue(currentQueue.filter(c => !doneIds.has(c.id)));
+        }
     });
 
     // 感情状態取得（テンポ制御 + 声トーン補正用）

@@ -36,7 +36,7 @@ ELINO is a desktop companion built on Electron. It renders Live2D or VRM models 
 
 **Your voice, your choice** -- Whisper for speech recognition, OpenAI TTS / VOICEVOX / browser TTS for output. Full voice I/O without locking you into one provider.
 
-**Goes live with you** -- Streaming mode reads YouTube and Twitch chat, letting your companion interact with your audience. (WIP)
+**Goes live with you** -- Streaming mode reads YouTube chat (and other platforms via OneComme), letting your companion interact with your audience. (WIP)
 
 **VRChat-ready** -- OSC-based lip sync and expression control for bringing your companion into VRChat.
 
@@ -162,7 +162,7 @@ elino/
 | Character | Model type, window size, FPS, resolution, model path |
 | Personality | Name, presets, character slot management |
 | Proactive | Auto-speech frequency and conditions |
-| Streaming | YouTube / Twitch comment integration (WIP) |
+| Streaming | YouTube / OneComme comment integration (WIP) |
 | Web Access | Browser access via local server (WIP) |
 
 ## Limitations

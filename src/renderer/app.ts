@@ -148,6 +148,8 @@ let isStreaming = false;
 // 配信コメントキュー
 let commentQueue: Array<{ author: string; text: string; platform: string; id: string }> = [];
 let isProcessingComment = false;
+// 現在応答中のbroadcastコメントIDs（完了時にack送信用）
+let _inflightCommentIds: string[] = [];
 // TTS_AUDIO_READY_EVENT リスナーの参照（重複登録防止用）
 let _ttsAudioReadyHandler: EventListener | null = null;
 let streamingMessageDiv: HTMLElement | null = null;
@@ -213,6 +215,12 @@ platform.onLLMDone(async () => {
   if (!isStreaming) return;
 
   isStreaming = false;
+
+  // broadcastコメント応答完了 → inflightコメントをキューから削除するようmainに通知
+  if (_inflightCommentIds.length > 0) {
+    platform.setBrainState({ commentsDone: _inflightCommentIds });
+    _inflightCommentIds = [];
+  }
 
   // 感情状態をキャッシュ更新（テンポ制御 + 声トーン補正用）
   try {
@@ -412,6 +420,11 @@ platform.onProactiveTrigger(async (payload) => {
 
   // Interrupt Gate: ストリーミング開始を通知
   platform.setBrainState({ doNotDisturb: true });
+
+  // broadcastコメント応答の場合、完了時にack送信するためIDを保持
+  if (payload.context?.comments) {
+    _inflightCommentIds = payload.context.comments.map((c: any) => c.id);
+  }
 
   platform.streamLLM({
     messages: currentMessages,
@@ -863,6 +876,11 @@ function addViewerComment(author: string, text: string, platform: string) {
 
 // コメントキュー処理
 function processCommentQueue() {
+  // 配信モード（broadcastMode）時はbrain-tick経由でのみ応答する
+  // ここでの即時応答は非配信モード時のみ
+  const isBroadcastMode = currentSettings?.streaming?.broadcastMode && currentSettings?.streaming?.enabled;
+  if (isBroadcastMode) return;
+
   if (isProcessingComment || isStreaming || commentQueue.length === 0) return;
   if (ttsService.isSpeaking()) return;
 
@@ -872,10 +890,8 @@ function processCommentQueue() {
   // チャットに視聴者コメント表示
   addViewerComment(comment.author, comment.text, comment.platform);
 
-  // LLMに送信（配信コメントとして）
-  const commentText = `[配信コメント] ${comment.author}さん: ${comment.text}`;
-  currentMessages.push({ role: 'user', content: commentText });
-
+  // LLMに送信（配信コメントとして — 配信プロンプトを通すためisProactive + context.commentsを使用）
+  // 注意: viewerコメントはcurrentMessagesに積まない（記憶汚染防止）
   isStreaming = true;
   platform.sendMotionTrigger?.('thinking');
   platform.setBrainState({ doNotDisturb: true });
@@ -884,7 +900,10 @@ function processCommentQueue() {
 
   platform.streamLLM({
     messages: currentMessages,
-    isProactive: false,
+    isProactive: true,
+    context: {
+      comments: [{ id: comment.id || `comment-${Date.now()}`, author: comment.author, text: comment.text }]
+    },
     useOpenClaw: isAgentMode,
     useClaudeCode: isClaudeCodeMode
   });

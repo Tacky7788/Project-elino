@@ -130,8 +130,12 @@ async function brainTick() {
         );
 
         if (action && action.type === 'comment_response' && action.context?.comments) {
+            // コメントを即削除せず、inflightフラグを付けて次のtickで選ばれないようにする
+            // 応答完了後にrendererからack（broadcast:comment-done）で削除される
             const selectedIds = new Set(action.context.comments.map(c => c.id));
-            setBroadcastQueue(broadcastQueue.filter(c => !selectedIds.has(c.id)));
+            setBroadcastQueue(broadcastQueue.map(c =>
+                selectedIds.has(c.id) ? { ...c, inflight: true } : c
+            ));
         }
     } else {
         const chatWindow = _ctx.chatWindow;
