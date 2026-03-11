@@ -4,7 +4,7 @@
 
 <h1 align="center">ELINO</h1>
 
-<p align="center">いつもそばにいるAIコンパニオン。</p>
+<p align="center"><strong>いつもそばにいるAIコンパニオン。</strong></p>
 
 <p align="center">
   <a href="https://github.com/Tacky7788/Project-elino/blob/main/LICENSE"><img src="https://img.shields.io/github/license/Tacky7788/Project-elino?style=flat&colorA=080f12&colorB=1fa669" alt="License"></a>
@@ -13,167 +13,192 @@
 </p>
 
 <p align="center">
-  <a href="README.md">English</a>
+  <a href="README.md">English</a> · <a href="README.zh-CN.md">中文</a>
 </p>
 
 ---
 
-ELINOはデスクトップに住むAIコンパニオン。Live2D/VRMモデルを描画し、好きなLLMに接続して、あなたと会話する。
+ELINOはデスクトップに住むAIコンパニオン。ブラウザタブの中のチャットボットじゃない。
 
-最大の特徴は、人間のような記憶を目指していること。事実の記憶、会話の要約、関係性の変化、感情の推移——すべてローカルに保存され、忘却曲線に従って自然に想起される。何週間も前の会話を覚えていて、しばらく黙っていると気づいて話しかけてくる。
+Live2D/VRMキャラクターを描画し、好きなLLMに接続して会話する。最後のメッセージだけじゃなく、何週間も前の会話を覚えている。しばらく黙っていると気づいて話しかけてくる。すべての記憶はローカルに保存される。
 
-ブラウザタブの中のチャットボットじゃない。あなたのそばにいるもの。
+> **開発状況:** アクティブに開発中。[Issue](https://github.com/Tacky7788/Project-elino/issues)や[Discussion](https://github.com/Tacky7788/Project-elino/discussions)からフィードバック歓迎。
 
-> **Note:** ELINOはまだ開発途中のプロジェクトです。フィードバック、バグ報告、機能提案を歓迎しています。[Issue](https://github.com/Tacky7788/Project-elino/issues)や[Discussion](https://github.com/Tacky7788/Project-elino/discussions)からお気軽にどうぞ。
+## 特徴
 
-## ELINOの特徴
+🧠 **ちゃんと機能する記憶** — 4層記憶 + BM25×ベクトルのハイブリッド検索。忘却曲線、感情重み付け、ピン固定。[詳細は下へ](#記憶システム)。
 
-**デュアルモデル描画** -- Live2DとVRMを同じアプリで。好きなフォーマットを選んで、いつでも切り替えられる。
+🎭 **Live2D & VRM** — 1つのアプリで両方対応。いつでも切替可能、記憶と性格はそのまま。
 
-**リアルな感情** -- 会話のトーンを読み取り、表情やモーションにリアルタイムで反映する。スクリプトされた反応ではなく、文脈に応じた表現。
+💬 **リアルな感情** — 会話のトーンをリアルタイムで読み取り、表情とモーションに反映。スクリプトではなく文脈に応じた表現。
 
-**記憶の永続化** -- あなたが話した事実、過去の会話の要約、あなたとコンパニオンの関係性の変化。すべてローカルに保存され、自動的に管理される。
+👄 **ハイブリッドリップシンク** — フォネームタイミング × 音声振幅。両モデルタイプで自然な口の動き。
 
-**自分から話しかける** -- プロアクティブ発話により、沈黙が続くとコンパニオンから会話を始める。ランダムなノイズではなく、あなたのことを知った上での発言。
+🗣️ **自分から話しかける** — 沈黙が続くと、あなたのことを知った上で話しかける。ランダムじゃなく文脈のある発言。
 
-**複数の人格** -- キャラクタースロットで、まったく異なるコンパニオンを作成・切り替え可能。それぞれが独自の記憶、性格、外見を持つ。
+🎛️ **複数のコンパニオン** — キャラクタースロットで記憶・性格・外見が独立したコンパニオンを管理。
 
-**音声は自由に** -- Whisperで音声認識、OpenAI TTS / VOICEVOX / ブラウザTTSで読み上げ。プロバイダーに縛られない完全な音声I/O。
+🎙️ **音声は自由に** — Whisper STT + OpenAI TTS / VOICEVOX / ブラウザTTS。自由に組み合わせ可能。
 
-**配信と一緒に** -- 配信モードでYouTubeチャット（OneComme経由で他プラットフォームも対応）を読み取り、コンパニオンが視聴者と対話する。（開発中）
+📡 **配信モード** — YouTubeチャット + OneComme。コンパニオンが視聴者とリアルタイムで対話。*（開発中）*
 
-**VRChat対応** -- OSCベースのリップシンクと表情制御で、コンパニオンをVRChatに連れていける。
+🌐 **VRChat対応** — OSCリップシンクと表情制御。
 
-**Claude Code連携** -- 起動中のClaude Code CLIセッションに直接接続して、AI開発ワークフローを構築できる。
+⚡ **Claude Code連携** — 起動中のCLIセッションに直接接続してAI開発。
+
+## 記憶システム
+
+ELINOの記憶はチャットログではない。人間の想起に近い動作を目指した階層型検索システム。
+
+### アーキテクチャ
+
+| 層 | 保存内容 |
+|----|---------|
+| **Facts** | 名前・好み・出来事など、あなたが話した具体的な情報 |
+| **Summaries** | 過去の会話の自動生成サマリー |
+| **Relationship** | 関係性がどう変化してきたかのエピソード記録 |
+| **Emotional State** | 6軸の内部状態、セッションをまたいで持続 |
+
+### ハイブリッド検索
+
+想起時に**BM25とベクトル検索を並列実行**し、RRF（Reciprocal Rank Fusion）で結果をマージ。BM25はキーワード一致、ベクトル検索は意味的類似性を捕捉。`paraphrase-multilingual-MiniLM-L12-v2`ベースで多言語に自然対応。
+
+### 忘却曲線
+
+記憶には**retention score（保持スコア）**があり、時間とともに減衰。頻繁に想起される記憶や感情的に強い記憶ほど遅く減衰する。重要なことは残り、些細なことは薄れる。人間と同じように。
+
+### 感情状態（6軸）
+
+| 軸 | 影響 |
+|----|------|
+| **Valence** | ポジティブ ↔ ネガティブの気分 |
+| **Arousal** | エネルギーレベル — 落ち着き vs. 興奮 |
+| **Dominance** | 断定的 vs. 控えめな口調 |
+| **Trust** | あなたへの開放度 |
+| **Curiosity** | 関心 — 質問する vs. 受け身 |
+| **Fatigue** | 返答の長さとエネルギー |
+
+話し方や振る舞いに影響し、セッションをまたいで持続する。
+
+### ピン固定 & プライバシー
+
+重要な記憶はピン固定で永続化。全データは `%APPDATA%/elino/` に保存、クラウド同期なし、テレメトリなし。
 
 ## クイックスタート
+
+```bash
+git clone https://github.com/Tacky7788/Project-elino.git
+cd elino
+npm install
+cp .env.example .env   # APIキーを設定（アプリ内からも可能）
+npm run dev             # 開発モードで起動
+```
+
+> 初回起動時にセットアップウィザードが案内。デスクトップのキャラをクリックしてチャット開始。設定はタスクトレイから。
+
+<details>
+<summary><strong>プロダクション & パッケージング</strong></summary>
+
+```bash
+npm run build && npm start   # プロダクション
+npm run pack                 # インストーラー作成
+```
+
+</details>
 
 ### 必要環境
 
 - Node.js 18+
 - npm
 
-### インストールと起動
-
-```bash
-git clone https://github.com/Tacky7788/Project-elino.git
-cd elino
-npm install
-```
-
-`.env.example` を `.env` にコピーしてAPIキーを設定する（アプリ内の設定画面からも可能）。
-
-```bash
-cp .env.example .env
-```
-
-```bash
-# 開発モード
-npm run dev
-
-# プロダクション
-npm run build && npm start
-
-# インストーラー作成
-npm run pack
-```
-
-### 初回起動
-
-初回起動時にセットアップウィザードが案内する。デスクトップ上のキャラクターをクリックしてチャットウィンドウを開く。設定はタスクトレイから。
-
 ## 対応LLM
 
-- Anthropic (Claude)
-- OpenAI
-- Google (Gemini)
-- Groq
-- DeepSeek
+| プロバイダー | モデル |
+|-------------|--------|
+| Anthropic | Claude 4.5 / 4 / 3.5 |
+| OpenAI | GPT-4o / 4.1 / o3 |
+| Google | Gemini 2.5 / 2.0 |
+| Groq | Llama, Mixtral（高速推論） |
+| DeepSeek | DeepSeek-V3 / R1 |
 
 ## モデル
 
-設定画面の「キャラクター」タブにある**参照**ボタンからモデルファイルを選択する。
-
 | フォーマット | 説明 |
 |-------------|------|
-| `.model3.json` | Live2D Cubism 4 モデル |
-| `.vrm` | VRM 3D アバター |
-| `.zip` | 上記いずれかを含むアーカイブ（自動展開） |
+| `.model3.json` | Live2D Cubism 4 |
+| `.vrm` | VRM 3Dアバター |
+| `.zip` | いずれかの形式を含むアーカイブ（自動展開） |
 
-### モデルの入手先
+**設定 > キャラクター > 参照**からモデルファイルを選択。初回起動時にサンプルモデルが自動ダウンロードされる。
 
-- [VRoid Hub](https://hub.vroid.com/) -- 無料VRMモデル（個別のライセンスを確認）
-- [Live2D サンプルモデル](https://www.live2d.com/learn/sample/) -- 公式サンプル
-- [Booth](https://booth.pm/) -- コミュニティ制作のLive2D / VRMモデル
+**モデルの入手先:** [VRoid Hub](https://hub.vroid.com/) · [Live2Dサンプル](https://www.live2d.com/learn/sample/) · [Booth](https://booth.pm/)
 
-### Live2D SDK
+> **Live2D SDK:** Live2Dモデルの表示に必要（[無料ダウンロード](https://www.live2d.com/sdk/download/web/)、ライセンス同意が必要）。セットアップウィザードで案内される。VRMは不要。
 
-Live2Dモデルの表示には [Cubism SDK for Web](https://www.live2d.com/sdk/download/web/)（無料、ライセンス同意が必要）が必要。初回起動時のセットアップ画面で案内される。VRMモデルは不要。
-
-## データ
-
-ユーザーデータはすべて `%APPDATA%/elino/companion/` にローカル保存される。
-
-<details>
-<summary>ディレクトリ構成</summary>
-
-```
-companion/
-  user.json           # ユーザー情報
-  settings.json       # アプリ設定
-  active.json         # スロット管理
-  slots/
-    {slotId}/
-      profile.json    # キャラクタープロフィール
-      personality.json # 性格設定
-      memory.json     # 記憶データ
-      state.json      # 状態
-      history.jsonl   # 会話履歴
-```
-
-</details>
-
-## アーキテクチャ
-
-<details>
-<summary>プロジェクト構成</summary>
-
-```
-elino/
-  main.cjs            # Electron メインプロセス
-  preload.cjs         # IPC ブリッジ
-  src/
-    core/             # バックエンド (brain, LLM, memory, TTS 等)
-    renderer/         # フロントエンド (TypeScript)
-      app.ts          # チャット UI
-      character.ts    # キャラクターウィンドウ
-      character-live2d.ts
-      character-vrm.ts
-      settings.html   # 設定画面
-  public/
-    live2d/models/    # モデルファイル（自動DLまたはユーザー配置）
-    lib/              # Live2D SDK（ユーザー配置）
-```
-
-</details>
-
-## 設定画面
+## 設定
 
 | タブ | 内容 |
 |------|------|
 | LLM | モデル選択、APIキー、最大トークン数 |
-| 音声 | STT/TTS エンジン選択、音声設定 |
-| キャラクター | モデルタイプ、ウィンドウサイズ、FPS、解像度、モデルパス |
-| 人格設定 | 名前、性格プリセット、キャラクタースロット管理 |
-| プロアクティブ | 自発的発話の頻度や条件 |
-| 配信 | YouTube / OneComme コメント連携（開発中） |
-| Web版アクセス | ブラウザからの利用設定（開発中） |
+| 音声 | STT/TTSエンジン、音声設定 |
+| キャラクター | モデルタイプ、ウィンドウ、FPS、解像度、リップシンク |
+| 人格設定 | 名前、プリセット、キャラクタースロット |
+| プロアクティブ | 自発的発話の頻度と条件 |
+| 配信 | YouTube / OneComme連携 *（開発中）* |
+| Web版アクセス | ブラウザからのアクセス *（開発中）* |
+
+<details>
+<summary><strong>プロジェクト構成</strong></summary>
+
+```
+elino/
+  main.cjs              # Electron メインプロセス
+  preload.cjs           # IPC ブリッジ
+  src/
+    core/               # バックエンド (brain, LLM, memory, TTS)
+    renderer/           # フロントエンド (TypeScript)
+      app.ts            # チャットUI
+      character-live2d.ts
+      character-vrm.ts
+      settings.html     # 設定画面（8タブ）
+  public/
+    live2d/models/      # モデルファイル
+    lib/                # Live2D SDK
+```
+
+</details>
+
+<details>
+<summary><strong>データディレクトリ</strong></summary>
+
+```
+%APPDATA%/elino/companion/
+  user.json             # ユーザー情報
+  settings.json         # アプリ設定
+  active.json           # スロット管理
+  slots/{slotId}/
+    profile.json        # キャラプロフィール
+    personality.json    # 性格設定
+    memory.json         # 記憶データ
+    state.json          # 感情状態
+    history.jsonl       # 会話履歴
+```
+
+</details>
 
 ## 制限事項
 
-- Windows のみ対応（Electron + NSIS インストーラー）
-- Live2D SDK は別途用意が必要（プロプライエタリライセンス）
+- Windowsのみ（Electron + NSIS）
+- Live2D SDKは別途用意が必要（プロプライエタリライセンス）
+
+## コントリビュート
+
+コントリビュート歓迎！IssueやPRをお気軽にどうぞ。バグ報告、機能提案、翻訳、モデル互換性の修正など、なんでも。
 
 ## ライセンス
 
 [MIT](LICENSE)
+
+---
+
+<p align="center">ELINOが気に入ったら、リポジトリに ⭐ をいただけると励みになります。</p>

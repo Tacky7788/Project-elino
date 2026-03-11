@@ -4,7 +4,7 @@
 
 <h1 align="center">ELINO</h1>
 
-<p align="center">Your AI companion, always by your side.</p>
+<p align="center"><strong>Your AI companion, always by your side.</strong></p>
 
 <p align="center">
   <a href="https://github.com/Tacky7788/Project-elino/blob/main/LICENSE"><img src="https://img.shields.io/github/license/Tacky7788/Project-elino?style=flat&colorA=080f12&colorB=1fa669" alt="License"></a>
@@ -13,167 +13,194 @@
 </p>
 
 <p align="center">
-  <a href="README.ja.md">日本語</a>
+  <a href="README.ja.md">日本語</a> · <a href="README.zh-CN.md">中文</a>
 </p>
 
 ---
 
-ELINO is an AI companion that lives on your desktop. It renders Live2D/VRM models, connects to the LLM of your choice, and talks with you.
+ELINO is an AI companion that lives on your desktop — not in a browser tab.
 
-What sets it apart is memory designed to feel human. Facts, conversation summaries, relationship changes, emotional shifts -- all stored locally, recalled naturally through a forgetting curve. It remembers conversations from weeks ago, and notices when you've been quiet.
+It renders Live2D/VRM characters, connects to the LLM of your choice, and remembers you. Not just your last message, but conversations from weeks ago. It notices when you've been quiet and talks first. All memory stays on your machine.
 
-Not a chatbot in a browser tab. Something that stays with you.
+> **Status:** Active development. [Issues](https://github.com/Tacky7788/Project-elino/issues) and [Discussions](https://github.com/Tacky7788/Project-elino/discussions) are welcome.
 
-> **Note:** ELINO is still in active development. Feedback, bug reports, and feature suggestions are very welcome -- feel free to open an [issue](https://github.com/Tacky7788/Project-elino/issues) or start a [discussion](https://github.com/Tacky7788/Project-elino/discussions).
+## Features
 
-## What Makes ELINO Different
+🧠 **Memory that actually works** — Four-layer memory with hybrid BM25 + vector search. Forgetting curve, emotional weighting, pinned facts. [Details below](#memory-system).
 
-**Dual model rendering** -- Live2D and VRM side by side in the same app. Pick whichever format you prefer, or switch between them.
+🎭 **Live2D & VRM** — Both formats in one app. Switch anytime — memory and personality carry over.
 
-**Real emotions** -- ELINO reads the tone of your conversation and maps it to facial expressions and body motions in real time. Not scripted reactions, but contextual ones.
+💬 **Real emotions** — Reads conversation tone → maps to expressions and motion in real time. Not scripted.
 
-**Memory that persists** -- Facts you share, summaries of past conversations, the evolving relationship between you and your companion. All stored locally, all managed automatically.
+👄 **Hybrid lip sync** — Phoneme timing × audio amplitude. Natural mouth movement for both model types.
 
-**It talks first** -- Proactive speech means your companion will initiate conversation during periods of silence. Not random noise, but contextual remarks based on what it knows about you.
+🗣️ **Proactive speech** — Goes quiet? Your companion reaches out with something relevant, not random.
 
-**Multiple personalities** -- Character slots let you create and switch between entirely different companions, each with their own memory, personality, and appearance.
+🎛️ **Multiple companions** — Character slots with independent memory, personality, and appearance.
 
-**Your voice, your choice** -- Whisper for speech recognition, OpenAI TTS / VOICEVOX / browser TTS for output. Full voice I/O without locking you into one provider.
+🎙️ **Flexible voice** — Whisper STT + OpenAI TTS / VOICEVOX / browser TTS. Mix and match freely.
 
-**Goes live with you** -- Streaming mode reads YouTube chat (and other platforms via OneComme), letting your companion interact with your audience. (WIP)
+📡 **Streaming mode** — YouTube chat + OneComme. Your companion talks to your audience. *(WIP)*
 
-**VRChat-ready** -- OSC-based lip sync and expression control for bringing your companion into VRChat.
+🌐 **VRChat-ready** — OSC lip sync and expression control.
 
-**Claude Code integration** -- Connect directly to a running Claude Code CLI session for an AI-powered development workflow.
+⚡ **Claude Code integration** — Connect to a running CLI session for AI-powered dev.
+
+## Memory System
+
+ELINO's memory isn't a chat log. It's a layered retrieval system designed to work like human recall.
+
+### Architecture
+
+| Layer | What it stores |
+|-------|---------------|
+| **Facts** | Things you've shared — name, preferences, events |
+| **Summaries** | Auto-generated conversation summaries |
+| **Relationship** | Episodic records of how your bond has evolved |
+| **Emotional State** | 6-axis internal state, persistent across sessions |
+
+### Hybrid Retrieval
+
+When recalling, ELINO runs **BM25 + vector search in parallel** and merges results via RRF (Reciprocal Rank Fusion). BM25 catches exact keywords; vector search catches meaning. Powered by `paraphrase-multilingual-MiniLM-L12-v2` — works across languages naturally.
+
+### Forgetting Curve
+
+Memories have a **retention score** that decays over time. Frequently recalled or emotionally significant memories decay slower. Important things stay. Trivial things fade. Like a person.
+
+### Emotional State (6 axes)
+
+Your companion continuously tracks:
+
+| Axis | What it affects |
+|------|----------------|
+| **Valence** | Positive ↔ negative mood |
+| **Arousal** | Energy level — calm vs. excited |
+| **Dominance** | Assertive vs. tentative tone |
+| **Trust** | How openly it speaks to you |
+| **Curiosity** | Engagement — asks questions vs. passive |
+| **Fatigue** | Response length and energy |
+
+These shape how your companion speaks and behaves, persisting across sessions.
+
+### Pinned Facts & Privacy
+
+Pin critical memories so they never fade. All data stays in `%APPDATA%/elino/` — no cloud, no telemetry.
 
 ## Quick Start
+
+```bash
+git clone https://github.com/Tacky7788/Project-elino.git
+cd elino
+npm install
+cp .env.example .env   # Add your API keys (or configure in-app)
+npm run dev             # Start development mode
+```
+
+> First launch opens a setup wizard. Click the desktop character to chat. Settings in the system tray.
+
+<details>
+<summary><strong>Production & packaging</strong></summary>
+
+```bash
+npm run build && npm start   # Production
+npm run pack                 # Create installer
+```
+
+</details>
 
 ### Requirements
 
 - Node.js 18+
 - npm
 
-### Install and run
-
-```bash
-git clone https://github.com/Tacky7788/Project-elino.git
-cd elino
-npm install
-```
-
-Copy `.env.example` to `.env` and add your API keys (you can also set them from the in-app settings).
-
-```bash
-cp .env.example .env
-```
-
-```bash
-# Development
-npm run dev
-
-# Production
-npm run build && npm start
-
-# Create installer
-npm run pack
-```
-
-### First launch
-
-On first launch, a setup wizard will guide you through the initial configuration. Click the character on your desktop to open the chat window. Access settings from the system tray.
-
 ## Supported LLMs
 
-- Anthropic (Claude)
-- OpenAI
-- Google (Gemini)
-- Groq
-- DeepSeek
+| Provider | Models |
+|----------|--------|
+| Anthropic | Claude 4.5 / 4 / 3.5 |
+| OpenAI | GPT-4o / 4.1 / o3 |
+| Google | Gemini 2.5 / 2.0 |
+| Groq | Llama, Mixtral (fast inference) |
+| DeepSeek | DeepSeek-V3 / R1 |
 
 ## Models
 
-Use the **Browse** button in Settings > Character to select model files.
-
 | Format | Description |
 |--------|-------------|
-| `.model3.json` | Live2D Cubism 4 model |
+| `.model3.json` | Live2D Cubism 4 |
 | `.vrm` | VRM 3D avatar |
-| `.zip` | Archive containing either format (auto-extracted) |
+| `.zip` | Either format, auto-extracted |
 
-### Where to find models
+Use **Settings > Character > Browse** to select. On first launch, sample models are downloaded automatically.
 
-- [VRoid Hub](https://hub.vroid.com/) -- Free VRM models (check individual licenses)
-- [Live2D Sample Models](https://www.live2d.com/learn/sample/) -- Official samples
-- [Booth](https://booth.pm/) -- Community-made Live2D and VRM models
+**Where to find models:** [VRoid Hub](https://hub.vroid.com/) · [Live2D Samples](https://www.live2d.com/learn/sample/) · [Booth](https://booth.pm/)
 
-### Live2D SDK
-
-Live2D rendering requires the [Cubism SDK for Web](https://www.live2d.com/sdk/download/web/) (free, license agreement required). The first-launch setup screen handles this. VRM models work without it.
-
-## Data
-
-All user data is stored locally in `%APPDATA%/elino/companion/`.
-
-<details>
-<summary>Directory structure</summary>
-
-```
-companion/
-  user.json           # User info
-  settings.json       # App settings
-  active.json         # Slot management
-  slots/
-    {slotId}/
-      profile.json    # Character profile
-      personality.json # Personality settings
-      memory.json     # Memory data
-      state.json      # State
-      history.jsonl   # Conversation history
-```
-
-</details>
-
-## Architecture
-
-<details>
-<summary>Project structure</summary>
-
-```
-elino/
-  main.cjs            # Electron main process
-  preload.cjs         # IPC bridge
-  src/
-    core/             # Backend (brain, LLM, memory, TTS, etc.)
-    renderer/         # Frontend (TypeScript)
-      app.ts          # Chat UI
-      character.ts    # Character window entry
-      character-live2d.ts
-      character-vrm.ts
-      settings.html   # Settings UI
-  public/
-    live2d/models/    # Model files (auto-downloaded or user-provided)
-    lib/              # Live2D SDK (user-provided)
-```
-
-</details>
+> **Live2D SDK:** Required for Live2D models ([free download](https://www.live2d.com/sdk/download/web/), license agreement needed). The setup wizard handles this. VRM works without it.
 
 ## Settings
 
 | Tab | Contents |
 |-----|----------|
-| LLM | Model selection, API keys, max tokens |
-| Voice | STT/TTS engine, voice settings |
-| Character | Model type, window size, FPS, resolution, model path |
-| Personality | Name, presets, character slot management |
-| Proactive | Auto-speech frequency and conditions |
-| Streaming | YouTube / OneComme comment integration (WIP) |
-| Web Access | Browser access via local server (WIP) |
+| LLM | Model, API keys, max tokens |
+| Voice | STT/TTS engine, voice config |
+| Character | Model type, window, FPS, resolution, lip sync |
+| Personality | Name, presets, character slots |
+| Proactive | Auto-speech frequency and triggers |
+| Streaming | YouTube / OneComme integration *(WIP)* |
+| Web Access | Browser access via localhost *(WIP)* |
+
+<details>
+<summary><strong>Project structure</strong></summary>
+
+```
+elino/
+  main.cjs              # Electron main process
+  preload.cjs           # IPC bridge
+  src/
+    core/               # Backend (brain, LLM, memory, TTS)
+    renderer/           # Frontend (TypeScript)
+      app.ts            # Chat UI
+      character-live2d.ts
+      character-vrm.ts
+      settings.html     # Settings UI (8 tabs)
+  public/
+    live2d/models/      # Model files
+    lib/                # Live2D SDK
+```
+
+</details>
+
+<details>
+<summary><strong>Data directory</strong></summary>
+
+```
+%APPDATA%/elino/companion/
+  user.json             # User info
+  settings.json         # App settings
+  active.json           # Slot management
+  slots/{slotId}/
+    profile.json        # Character profile
+    personality.json    # Personality config
+    memory.json         # Memory data
+    state.json          # Emotional state
+    history.jsonl       # Conversation history
+```
+
+</details>
 
 ## Limitations
 
-- Windows only (Electron + NSIS installer)
+- Windows only (Electron + NSIS)
 - Live2D SDK must be provided separately (proprietary license)
+
+## Contributing
+
+Contributions welcome! Open an issue or PR. Bug reports, feature ideas, translations, model compatibility fixes — all appreciated.
 
 ## License
 
 [MIT](LICENSE)
+
+---
+
+<p align="center">If ELINO resonates with you, a ⭐ on the repo helps a lot.</p>
