@@ -124,6 +124,7 @@ function createSettingsWindow() {
         return;
     }
 
+    const iconPath = path.join(appRoot, 'assets', 'icon.png');
     const win = new BrowserWindow({
         width: 720,
         height: 650,
@@ -132,6 +133,7 @@ function createSettingsWindow() {
         resizable: true,
         minimizable: false,
         maximizable: false,
+        icon: iconPath,
         webPreferences: {
             devTools: isDev,
             nodeIntegration: false,
@@ -156,8 +158,9 @@ function createSettingsWindow() {
 }
 
 function createTray() {
-    const icon = nativeImage.createEmpty();
-    const tray = new Tray(icon);
+    const iconPath = path.join(_ctx.appRoot, 'assets', 'icon.png');
+    const icon = nativeImage.createFromPath(iconPath);
+    const tray = new Tray(icon.isEmpty() ? nativeImage.createEmpty() : icon);
 
     const contextMenu = Menu.buildFromTemplate([
         {
@@ -263,10 +266,10 @@ function register(ipcMain, ctx) {
     });
 
     // Lip Sync: chat → character 転送
-    ipcMain.on('lip-sync', (event, value) => {
+    ipcMain.on('lip-sync', (event, value, form) => {
         const w = ctx.characterWindow;
         if (w && !w.isDestroyed()) {
-            w.webContents.send('lip-sync', value);
+            w.webContents.send('lip-sync', value, form);
         }
     });
 
