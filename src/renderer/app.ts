@@ -543,6 +543,48 @@ platform.onExternalSpeak((text: string) => {
   ttsService.speak(text).catch((err: unknown) => console.warn('[external:speak] TTS error:', err));
 });
 
+// VRChat音声リスナー: 他プレイヤーの発言をバッチで受信→まとめてLLMに送る
+let _vrchatTranscriptBuffer: string[] = [];
+let _vrchatBatchTimer: ReturnType<typeof setTimeout> | null = null;
+const VRCHAT_BATCH_DELAY = 4000; // 4秒間溜めてからまとめて送る
+
+function flushVrchatTranscripts() {
+  _vrchatBatchTimer = null;
+  if (_vrchatTranscriptBuffer.length === 0) return;
+
+  const lines = _vrchatTranscriptBuffer.map(t => `- ${t}`).join('\n');
+  _vrchatTranscriptBuffer = [];
+
+  // UIに表示（ユーザー発話とは別枠）
+  addMessage('user', `[VRChat会話]\n${lines}`, true);
+
+  // currentMessagesには積まない（記憶汚染防止 — 配信コメントと同じ方式）
+  // context経由でsystem promptに注入する
+  if (!isStreaming) {
+    isStreaming = true;
+    platform.sendMotionTrigger?.('thinking');
+    platform.setBrainState({ doNotDisturb: true });
+    currentAssistantText = '';
+    streamingMessageDiv = addMessage('assistant', '', false);
+    platform.streamLLM({
+      messages: currentMessages,
+      isProactive: false,
+      context: { vrchatConversation: lines },
+      useOpenClaw: false,
+      useClaudeCode: false
+    });
+  }
+}
+
+platform.onVrchatListenerTranscript?.((text: string) => {
+  console.log('[VRChat音声]', text);
+  _vrchatTranscriptBuffer.push(text);
+
+  // タイマーリセット — 新しい発言が来るたびに延長
+  if (_vrchatBatchTimer) clearTimeout(_vrchatBatchTimer);
+  _vrchatBatchTimer = setTimeout(flushVrchatTranscripts, VRCHAT_BATCH_DELAY);
+});
+
 // スロット切替時のリロード
 platform.onSlotChanged(async (slot) => {
   console.log('🔄 スロット切替検出:', slot.name);
@@ -1283,13 +1325,14 @@ function initTTSAndLipSync() {
   if (currentSettings?.lipSync) {
     lipSyncService.setConfig({
       enabled: currentSettings.lipSync.enabled,
-      mode: currentSettings.lipSync.mode
+      mode: currentSettings.lipSync.mode,
+      disableMouthForm: currentSettings.character?.disableMouthForm
     });
   }
 
   // リップシンクの口制御コールバック: 値をIPC経由でキャラウィンドウに転送
-  lipSyncService.registerMouthControl((openY: number, _form?: number) => {
-    platform.sendLipSync(openY);
+  lipSyncService.registerMouthControl((openY: number, form?: number) => {
+    platform.sendLipSync(openY, form);
   });
 
   // TTSコールバックでリップシンク開始/停止 + Interrupt Gate同期
@@ -1315,31 +1358,32 @@ function initTTSAndLipSync() {
     }
   });
 
-  // VOICEVOX音声の振幅解析用イベントリスナー（重複登録防止）
+  // TTS音声受信 → リップシンク接続
+  // PHONEME_READYがAUDIO_READYより先に発火するため、phonemeデータを保持して
+  // AUDIO_READY時にまとめて処理する
+  let _pendingPhonemes: import('./types').PhonemeEvent[] = [];
+
   if (_ttsAudioReadyHandler) {
     window.removeEventListener(TTS_AUDIO_READY_EVENT, _ttsAudioReadyHandler);
   }
   _ttsAudioReadyHandler = ((event: CustomEvent<HTMLAudioElement>) => {
     const audio = event.detail;
-    console.log('🔊 TTS音声受信、振幅解析接続');
+    // 振幅解析接続（音声ルーティング + フォールバック）
     lipSyncService.connectAudioElement(audio);
+    // phonemeデータがあればセット（animateAmplitude内で自動的に使われる）
+    if (_pendingPhonemes.length > 0) {
+      lipSyncService.setPhonemeData(audio, _pendingPhonemes);
+      _pendingPhonemes = [];
+    }
   }) as EventListener;
   window.addEventListener(TTS_AUDIO_READY_EVENT, _ttsAudioReadyHandler);
 
-  // 音素タイムライン用イベントリスナー（phonemeモード - 現在未使用）
-  window.addEventListener(TTS_PHONEME_READY_EVENT, ((event: CustomEvent<{ type: string; audio?: HTMLAudioElement; phonemes?: import('./types').PhonemeEvent[]; text?: string; rate?: number }>) => {
-    // 振幅モードを優先するため、phonemeモードは一時的に無効化
-    // if (currentSettings?.lipSync?.mode !== 'phoneme') return;
-
-    /*
-    const detail = event.detail;
-    if (detail.type === 'voicevox' && detail.audio) {
-      // VOICEVOX: 振幅解析を使用（TTS_AUDIO_READY_EVENTで処理されるのでここでは何もしない）
-      // 重複して connectAudioElement を呼ぶとエラーになるため削除
-      // console.log('🎤 VOICEVOX音声、振幅解析使用');
-      // lipSyncService.connectAudioElement(detail.audio);
+  // 音素タイムライン受信 → 保持（AUDIO_READYで使う）
+  window.addEventListener(TTS_PHONEME_READY_EVENT, ((event: CustomEvent<{ type: string; phonemes?: import('./types').PhonemeEvent[]; text?: string; rate?: number }>) => {
+    const phonemes = event.detail.phonemes || [];
+    if (phonemes.length > 0) {
+      _pendingPhonemes = phonemes;
     }
-    */
   }) as EventListener);
 
   console.log('✅ TTS/LipSync初期化完了');

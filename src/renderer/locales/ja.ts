@@ -389,6 +389,8 @@ export const ja: Record<string, string> = {
   'settings.character.lipsync.simple': 'シンプル（疑似口パク）',
   'settings.character.lipsync.amplitude': '振幅解析（VOICEVOX使用時）',
   'settings.character.lipsync.hint': '音素解析はVOICEVOX使用時に正確、Web Speech時は推定で動作します',
+  'settings.character.lipsync.disableMouthForm': '口の形変化を無効にする',
+  'settings.character.lipsync.disableMouthFormHint': '一部のLive2Dモデルで口の形変化が眉毛の動きに影響する場合にONにしてください',
 
   'settings.character.preset.section': 'モデルプリセット',
   'settings.character.preset.label': '保存済みプリセット',

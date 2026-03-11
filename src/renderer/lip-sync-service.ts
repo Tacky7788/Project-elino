@@ -1,4 +1,7 @@
-// Lip Sync Service - Simple (sin wave) + Amplitude-based + Phoneme-based
+// Lip Sync Service - amplitude + phoneme ハイブリッド
+// アニメーションループは animateAmplitude() に一本化
+// phonemeデータがあれば: mouthForm=phoneme, mouthOpenY=phoneme×amplitude
+// phonemeデータがなければ: amplitude単体でmouthOpenY
 
 import type { PhonemeEvent } from './types';
 
@@ -11,8 +14,9 @@ export interface LipSyncConfig {
   frequency: number;    // Hz (default: 8)
   amplitude: number;    // 0-1 (default: 0.8)
   // Amplitude mode settings
-  smoothingAttack: number;  // 0-1 (default: 0.3)
-  smoothingRelease: number; // 0-1 (default: 0.1)
+  smoothingAttack: number;  // 0-1 (口を開く速度)
+  smoothingRelease: number; // 0-1 (口を閉じる速度)
+  disableMouthForm?: boolean; // ParamMouthForm無効化（一部モデルで眉毛連動を防ぐ）
 }
 
 type MouthControlFn = (openY: number, form?: number) => void;
@@ -21,9 +25,7 @@ type MouthControlFn = (openY: number, form?: number) => void;
 const HIRAGANA_TO_VOWEL: Record<string, string> = {};
 const KATAKANA_TO_VOWEL: Record<string, string> = {};
 
-// あ行
 const vowelRows: [string, string, string][] = [
-  // [ひらがな列, カタカナ列, 母音]
   ['あいうえお', 'アイウエオ', 'aiueo'],
   ['かきくけこ', 'カキクケコ', 'aiueo'],
   ['さしすせそ', 'サシスセソ', 'aiueo'],
@@ -71,26 +73,26 @@ class LipSyncService {
     mode: 'phoneme',
     frequency: 8,
     amplitude: 0.8,
-    smoothingAttack: 0.3,
-    smoothingRelease: 0.1
+    smoothingAttack: 0.7,
+    smoothingRelease: 0.2
   };
 
-  // Amplitude mode resources
+  // Audio解析リソース
   private audioContext: AudioContext | null = null;
   private analyser: AnalyserNode | null = null;
   private sourceNode: MediaElementAudioSourceNode | null = null;
-  private dataArray: Uint8Array<ArrayBuffer> | null = null;
+  private dataArray: Float32Array | null = null;
   private lastAmplitude = 0;
-  private usingAmplitude = false; // amplitude解析が接続されているか
-  // 一度 createMediaElementSource で接続した Audio → SourceNode のキャッシュ
+  private longTermRms = 0; // 長期平均RMS（ベースライン）
   // Web Audio API は同じ Audio に対して createMediaElementSource を2回呼べない
   private sourceNodeCache = new WeakMap<HTMLAudioElement, MediaElementAudioSourceNode>();
 
-  // Phoneme mode resources
+  // Phoneme リソース
   private phonemeTimeline: PhonemeEvent[] = [];
   private phonemeAudio: HTMLAudioElement | null = null;
   private currentOpenY = 0;
   private currentForm = 0;
+  private _debugCounter = 0;
 
   setConfig(config: Partial<LipSyncConfig>) {
     this.config = { ...this.config, ...config };
@@ -107,11 +109,9 @@ class LipSyncService {
     this.isTalking = true;
     this.startTime = performance.now();
     this.lastAmplitude = 0;
-    this.usingAmplitude = false;
+    this.hasReceivedAudio = false;
 
     if (this.config.mode === 'simple') {
-      // simpleモードのみsin波アニメーション
-      // amplitude/phonemeモードはconnectAudioElement()で振幅解析に切り替わる
       this.animateSimple();
     }
     // amplitude/phoneme: connectAudioElement() が呼ばれるまで待機
@@ -119,18 +119,17 @@ class LipSyncService {
 
   stopTalking() {
     this.isTalking = false;
-    this.usingAmplitude = false;
 
     if (this.animationFrame) {
-      cancelAnimationFrame(this.animationFrame);
+      clearTimeout(this.animationFrame);
       this.animationFrame = null;
     }
 
-    // 口を閉じる
     if (this.mouthControl) {
       this.mouthControl(0, 0);
     }
 
+    this.phonemeTimeline = [];
     this.phonemeAudio = null;
     this.currentOpenY = 0;
     this.currentForm = 0;
@@ -143,49 +142,40 @@ class LipSyncService {
     const elapsed = (performance.now() - this.startTime) / 1000;
     const { frequency, amplitude } = this.config;
 
-    // Sin wave with noise for natural movement
     const sinValue = Math.sin(elapsed * frequency * Math.PI * 2);
     const noise = (Math.random() - 0.5) * 0.2;
     const mouthOpen = Math.max(0, Math.min(1, (sinValue + 1) / 2 * amplitude + noise));
 
     this.mouthControl(mouthOpen);
-
     this.animationFrame = requestAnimationFrame(() => this.animateSimple());
   }
 
-  // Amplitude-based lip sync — モードに関係なく音声要素が利用可能なら振幅解析を使用
+  // --- 音声接続 ---
   connectAudioElement(audio: HTMLAudioElement) {
-    if (!this.config.enabled) {
-      return;
-    }
+    if (!this.config.enabled) return;
 
     try {
-      // 既存のsin波アニメーションを停止（amplitude解析に切り替え）
-      if (this.animationFrame) {
-        cancelAnimationFrame(this.animationFrame);
-        this.animationFrame = null;
-      }
-
-      // 前回の接続をクリーンアップ
-      this.disconnectAudio();
-
-      // Create AudioContext if needed
       if (!this.audioContext) {
         this.audioContext = new AudioContext();
       }
-
-      // Resume if suspended
       if (this.audioContext.state === 'suspended') {
         this.audioContext.resume();
       }
 
-      // Create analyser
-      this.analyser = this.audioContext.createAnalyser();
-      this.analyser.fftSize = 256;
-      this.analyser.smoothingTimeConstant = 0.3;
+      if (!this.analyser) {
+        this.analyser = this.audioContext.createAnalyser();
+        this.analyser.fftSize = 1024; // 音節レベルの応答性と滑らかさのバランス
+        this.analyser.smoothingTimeConstant = 0;
+        this.analyser.connect(this.audioContext.destination);
+        this.dataArray = new Float32Array(1024);
+      }
 
-      // Connect audio element to analyser
-      // Web Audio API: 同じ Audio に createMediaElementSource を2回呼ぶとエラーになるのでキャッシュ
+      // 前のsourceNodeだけ切断
+      if (this.sourceNode) {
+        try { this.sourceNode.disconnect(); } catch (_) { /* already disconnected */ }
+        this.sourceNode = null;
+      }
+
       let source = this.sourceNodeCache.get(audio);
       if (!source) {
         source = this.audioContext.createMediaElementSource(audio);
@@ -193,83 +183,129 @@ class LipSyncService {
       }
       this.sourceNode = source;
       this.sourceNode.connect(this.analyser);
-      this.analyser.connect(this.audioContext.destination);
 
-      // Create data array for frequency data
-      this.dataArray = new Uint8Array(this.analyser.frequencyBinCount);
+      // アニメーションループが走ってなければ開始
+      if (!this.animationFrame) {
+        this.animateAmplitude();
+      }
 
-      this.usingAmplitude = true;
-
-      // Start amplitude animation
-      this.animateAmplitude();
-
-      console.log('✅ LipSync: 音声接続完了（振幅解析モード）');
+      console.log('✅ LipSync: 音声接続完了');
     } catch (err) {
       console.warn('⚠️ LipSync: 音声接続失敗、シンプルモードにフォールバック', err);
-      this.usingAmplitude = false;
-      this.animateSimple();
+      if (!this.animationFrame) this.animateSimple();
     }
   }
 
+  // === 統合アニメーションループ ===
+  // phonemeデータあり → ハイブリッド（phoneme形状 × amplitude強度）
+  // phonemeデータなし → amplitude単体
   private animateAmplitude() {
     if (!this.isTalking || !this.mouthControl || !this.analyser || !this.dataArray) return;
 
-    // Get frequency data
-    this.analyser.getByteFrequencyData(this.dataArray);
-
-    // Calculate RMS amplitude (focus on lower frequencies for speech)
+    // --- 時間ドメイン波形からRMS ---
+    this.analyser.getFloatTimeDomainData(this.dataArray);
     let sum = 0;
-    const voiceRange = Math.floor(this.dataArray.length * 0.5); // Lower half for voice
-    for (let i = 0; i < voiceRange; i++) {
+    const len = this.dataArray.length;
+    for (let i = 0; i < len; i++) {
       sum += this.dataArray[i] * this.dataArray[i];
     }
-    const rms = Math.sqrt(sum / voiceRange) / 255;
+    const rms = Math.sqrt(sum / len);
 
-    // ノイズゲート: 閾値以下は無音として扱う（無音時にパクパクしない）
-    const gatedRms = rms < 0.05 ? 0 : rms;
+    // --- baseline追従 ---
+    // 無音時は速くリセット、発話中はゆっくり追従（追いつきすぎ防止）
+    const baselineRate = rms < 0.01 ? 0.15 : 0.005;
+    this.longTermRms += (rms - this.longTermRms) * baselineRate;
 
-    // スムージング: 開口は適度に速く、閉口はより速く（無音→即閉じ）
-    const smoothing = gatedRms > this.lastAmplitude ? 0.4 : 0.5;
-    const smoothedAmplitude = this.lastAmplitude + (gatedRms - this.lastAmplitude) * smoothing;
-    this.lastAmplitude = smoothedAmplitude;
+    // --- amplitude target（baseline偏差ベース）---
+    const deviation = Math.max(0, rms - this.longTermRms * 0.8);
+    const scale = this.longTermRms > 0.005 ? deviation / this.longTermRms : 0;
+    const ampTarget = rms < 0.005 ? 0 : Math.min(1.0, Math.pow(scale * 1.5, 0.5));
 
-    // Scale to mouth open range (0-1)、ゲインを控えめに
-    const mouthOpen = Math.min(1, smoothedAmplitude * 2.0);
-    this.mouthControl(mouthOpen < 0.02 ? 0 : mouthOpen);
+    // --- attack/release smoothing（共通）---
+    const attackRate = this.config.smoothingAttack;
+    const releaseRate = this.config.smoothingRelease;
+    const rate = ampTarget > this.lastAmplitude ? attackRate : releaseRate;
+    this.lastAmplitude += (ampTarget - this.lastAmplitude) * rate;
 
-    this.animationFrame = requestAnimationFrame(() => this.animateAmplitude());
+    // 無音時はreleaseに任せて自然に閉じる（即ゼロにしない）
+
+    const smoothedAmp = this.lastAmplitude < 0.04 ? 0 : this.lastAmplitude;
+
+    // --- 出力計算 ---
+    let mouthOpen: number;
+    let mouthForm = 0;
+
+    if (this.phonemeTimeline.length > 0 && this.phonemeAudio) {
+      // === ハイブリッド: phoneme主導 + amplitude補正 ===
+      const currentTime = this.phonemeAudio.currentTime;
+      let phonemeOpenY = 0;
+      let phonemeForm = 0;
+
+      for (const phoneme of this.phonemeTimeline) {
+        if (currentTime >= phoneme.time && currentTime < phoneme.time + phoneme.duration) {
+          phonemeOpenY = phoneme.mouthOpenY;
+          phonemeForm = phoneme.mouthForm;
+          break;
+        }
+      }
+
+      // phoneme形状をスムーズ補間（速め — 短い音素にも追従）
+      this.currentOpenY += (phonemeOpenY - this.currentOpenY) * 0.6;
+      this.currentForm += (phonemeForm - this.currentForm) * 0.5;
+
+      // phoneme形状が取れてる → ハイブリッド、取れてない → amplitude直接
+      if (this.currentOpenY > 0.05) {
+        mouthOpen = this.currentOpenY * (0.5 + smoothedAmp * 0.5);
+        mouthForm = this.currentForm;
+      } else {
+        // phonemeが無音/未ヒット → amplitudeで直接駆動（口は動かす）
+        mouthOpen = smoothedAmp;
+        mouthForm = this.currentForm;
+      }
+
+    } else {
+      // === amplitude単体 ===
+      mouthOpen = smoothedAmp;
+    }
+
+    // デバッグ用（必要時にコメント解除）
+    // const mode = (this.phonemeTimeline.length > 0 && this.phonemeAudio) ? (this.currentOpenY > 0.05 ? 'HYB' : 'AMP*') : 'AMP';
+    // console.log(`👄 open=${mouthOpen.toFixed(3)} form=${mouthForm.toFixed(2)} rms=${rms.toFixed(4)} amp=${smoothedAmp.toFixed(3)} tgt=${ampTarget.toFixed(3)} bl=${this.longTermRms.toFixed(4)} phY=${this.currentOpenY.toFixed(3)} [${mode}]`);
+
+    this.mouthControl(mouthOpen, this.config.disableMouthForm ? 0 : mouthForm);
+    this.animationFrame = setTimeout(() => this.animateAmplitude(), 30) as unknown as number;
   }
 
-  // ===== Phoneme mode =====
+  // --- Phonemeデータ管理 ---
 
   setPhonemeTimeline(timeline: PhonemeEvent[]) {
     this.phonemeTimeline = timeline;
   }
 
-  // VOICEVOX用: HTMLAudioElement の currentTime に同期
-  startPhonemeSync(audio: HTMLAudioElement, timeline: PhonemeEvent[]) {
-    if (!this.config.enabled || !this.mouthControl) return;
-
+  // phonemeデータと対応audioをセット → animateAmplitude内でハイブリッド合成される
+  setPhonemeData(audio: HTMLAudioElement, timeline: PhonemeEvent[]) {
     this.phonemeTimeline = timeline;
     this.phonemeAudio = audio;
-    this.isTalking = true;
     this.currentOpenY = 0;
     this.currentForm = 0;
+  }
 
-    this.animatePhonemeWithAudio();
+  // startPhonemeSync: setPhonemeData + connectAudioElement の薄いラッパー
+  // 後方互換用。新規コードは setPhonemeData() + connectAudioElement() を直接使うこと
+  startPhonemeSync(audio: HTMLAudioElement, timeline: PhonemeEvent[]) {
+    if (!this.config.enabled || !this.mouthControl) return;
+    this.isTalking = true;
+    this.setPhonemeData(audio, timeline);
+    this.connectAudioElement(audio);
     console.log(`✅ LipSync: 音素同期開始（${timeline.length}音素）`);
   }
 
-  private animatePhonemeWithAudio() {
-    if (!this.isTalking || !this.mouthControl || !this.phonemeAudio) return;
-
-    const currentTime = this.phonemeAudio.currentTime;
-    this.updatePhonemeAtTime(currentTime);
-
-    this.animationFrame = requestAnimationFrame(() => this.animatePhonemeWithAudio());
+  clearPhonemeData() {
+    this.phonemeTimeline = [];
+    this.phonemeAudio = null;
   }
 
-  // Web Speech用: performance.now() ベースのタイマーで同期
+  // Web Speech用: performance.now() ベースのタイマーで音素推定同期
   startWebSpeechPhonemeSync(timeline: PhonemeEvent[]) {
     if (!this.config.enabled || !this.mouthControl) return;
 
@@ -280,23 +316,14 @@ class LipSyncService {
     this.currentOpenY = 0;
     this.currentForm = 0;
 
-    this.animatePhonemeWithTimer();
+    this.animateWebSpeechPhoneme();
     console.log(`✅ LipSync: Web Speech音素同期開始（${timeline.length}音素）`);
   }
 
-  private animatePhonemeWithTimer() {
+  private animateWebSpeechPhoneme() {
     if (!this.isTalking || !this.mouthControl) return;
 
     const currentTime = (performance.now() - this.startTime) / 1000;
-    this.updatePhonemeAtTime(currentTime);
-
-    this.animationFrame = requestAnimationFrame(() => this.animatePhonemeWithTimer());
-  }
-
-  private updatePhonemeAtTime(currentTime: number) {
-    if (!this.mouthControl) return;
-
-    // 現在の時刻に対応する音素を探す
     let targetOpenY = 0;
     let targetForm = 0;
 
@@ -308,33 +335,27 @@ class LipSyncService {
       }
     }
 
-    // スムーズ補間（急な変化を防ぐ）
-    const smoothing = 0.3;
-    this.currentOpenY += (targetOpenY - this.currentOpenY) * smoothing;
-    this.currentForm += (targetForm - this.currentForm) * smoothing;
-
+    this.currentOpenY += (targetOpenY - this.currentOpenY) * 0.3;
+    this.currentForm += (targetForm - this.currentForm) * 0.3;
     this.mouthControl(this.currentOpenY, this.currentForm);
+
+    this.animationFrame = requestAnimationFrame(() => this.animateWebSpeechPhoneme());
   }
 
   // 日本語テキストから母音タイムライン推定（Web Speech用）
   estimatePhonemeTimeline(text: string, rate: number = 1.0): PhonemeEvent[] {
     const timeline: PhonemeEvent[] = [];
-    // 1文字あたりの推定時間（秒）
     const charDuration = 0.12 / rate;
-    // 子音部分の推定時間
     const consonantDuration = 0.04 / rate;
     let currentTime = 0;
 
     for (const char of text) {
-      // ひらがな→母音
       let vowel = HIRAGANA_TO_VOWEL[char] || KATAKANA_TO_VOWEL[char];
 
       if (vowel) {
-        // 子音部分（閉口）
         if (!['あ', 'い', 'う', 'え', 'お', 'ア', 'イ', 'ウ', 'エ', 'オ'].includes(char)) {
           currentTime += consonantDuration;
         }
-
         const shape = vowelToShape(vowel);
         timeline.push({
           time: currentTime,
@@ -345,7 +366,6 @@ class LipSyncService {
         });
         currentTime += charDuration - consonantDuration;
       } else if (char === 'ー' || char === '〜') {
-        // 長音: 前の母音を延長
         if (timeline.length > 0) {
           const last = timeline[timeline.length - 1];
           timeline.push({
@@ -358,7 +378,6 @@ class LipSyncService {
         }
         currentTime += charDuration;
       } else if (char === 'っ' || char === 'ッ') {
-        // 促音: 短いポーズ
         timeline.push({
           time: currentTime,
           duration: charDuration * 0.8,
@@ -368,7 +387,6 @@ class LipSyncService {
         });
         currentTime += charDuration * 0.8;
       } else if (/[、。！？,.!?]/.test(char)) {
-        // 句読点: ポーズ
         timeline.push({
           time: currentTime,
           duration: charDuration * 2,
@@ -378,7 +396,6 @@ class LipSyncService {
         });
         currentTime += charDuration * 2;
       } else if (/[\u4e00-\u9fff]/.test(char)) {
-        // 漢字: 母音「a」として推定（不明なので）
         const shape = vowelToShape('a');
         timeline.push({
           time: currentTime,
@@ -389,7 +406,6 @@ class LipSyncService {
         });
         currentTime += charDuration;
       } else if (/[a-zA-Z]/.test(char)) {
-        // アルファベット: 母音推定
         const lc = char.toLowerCase();
         const alphaVowel = 'aeiou'.includes(lc) ? lc : 'a';
         const shape = vowelToShape(alphaVowel);
@@ -402,7 +418,6 @@ class LipSyncService {
         });
         currentTime += charDuration;
       } else {
-        // その他の文字: 短いポーズ
         currentTime += charDuration * 0.5;
       }
     }
@@ -412,24 +427,9 @@ class LipSyncService {
 
   disconnectAudio() {
     if (this.sourceNode) {
-      try {
-        this.sourceNode.disconnect();
-      } catch (e) {
-        // Already disconnected
-      }
+      try { this.sourceNode.disconnect(); } catch (_) { /* already disconnected */ }
       this.sourceNode = null;
     }
-
-    if (this.analyser) {
-      try {
-        this.analyser.disconnect();
-      } catch (e) {
-        // Already disconnected
-      }
-      this.analyser = null;
-    }
-
-    this.dataArray = null;
     this.lastAmplitude = 0;
   }
 

@@ -256,6 +256,7 @@ export interface CharacterSettings {
   stateMotionMap?: Record<string, string>;  // state名 → motion3.jsonパス (talk, thinking等)
   modelType?: 'live2d' | 'vrm';
   physicsEnabled?: boolean;
+  disableMouthForm?: boolean;  // ParamMouthForm無効化（一部モデルで眉毛連動を防ぐ）
   emotionMap?: Record<string, EmotionMapEntry>;
   vrm?: {
     cameraDistance: number;
@@ -528,6 +529,12 @@ export interface ElectronAPI {
   vrchatTest: () => Promise<{ success: boolean }>;
   vrchatChatbox: (message: string) => Promise<{ success: boolean }>;
   vrchatInstallVbcable: () => Promise<{ success: boolean; error?: string }>;
+  vrchatStartListener: () => Promise<{ success: boolean; pid?: string; error?: string }>;
+  vrchatStopListener: () => Promise<{ success: boolean }>;
+  vrchatListenerStatus: () => Promise<{ active: boolean; pid?: string }>;
+  vrchatFindProcess: () => Promise<{ found: boolean; pid?: string }>;
+  onVrchatListenerTranscript: (callback: (text: string) => void) => void;
+  onVrchatListenerState: (callback: (state: string) => void) => void;
   onLLMDelta: (callback: (delta: string) => void) => void;
   onLLMDone: (callback: () => void) => void;
   onLLMError: (callback: (error: string) => void) => void;
@@ -587,8 +594,8 @@ export interface ElectronAPI {
   // File parsing
   parseFile: (filePath: string) => Promise<{ text: string; pageCount?: number }>;
   // Lip Sync IPC (chat → character window bridge)
-  sendLipSync: (value: number) => void;
-  onLipSync: (callback: (value: number) => void) => void;
+  sendLipSync: (value: number, form?: number) => void;
+  onLipSync: (callback: (value: number, form?: number) => void) => void;
   // Motion Trigger IPC (chat → character window bridge)
   sendMotionTrigger?: (motion: string) => void;
   // Expression Change IPC (emotion → character expression)

@@ -517,8 +517,8 @@ export class Live2DRenderer implements CharacterRenderer {
           add(idxAngleZ, breathZ + talkZ * intensity);
           add(idxBodyX,  breathBodyX + Math.sin(t * 1.8) * 2.5 * intensity);
           add(idxBodyZ,  breathBodyZ + Math.sin(t * 1.4 + 0.5) * 1.5 * intensity);
-          set(idxBrowLY, Math.sin(t * 2.1) * 0.4);
-          set(idxBrowRY, Math.sin(t * 2.1 + 0.3) * 0.4);
+          set(idxBrowLY, Math.sin(t * 0.8) * 0.2);
+          set(idxBrowRY, Math.sin(t * 0.8 + 0.3) * 0.2);
           set(idxShoulder, Math.sin(t * 1.5) * 0.15);
           add(idxArmLA, Math.sin(t * 1.3) * 0.2 * intensity);
           add(idxArmRA, Math.sin(t * 1.3 + 0.8) * 0.2 * intensity);

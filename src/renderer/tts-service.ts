@@ -254,9 +254,6 @@ class TTSService {
 
       this.callbacks.onStart?.();
 
-      // amplitude lip sync用イベント
-      window.dispatchEvent(new CustomEvent(TTS_AUDIO_READY_EVENT, { detail: audio }));
-
       // 音素推定イベント（Web Speech互換、テキストベース）
       window.dispatchEvent(new CustomEvent(TTS_PHONEME_READY_EVENT, {
         detail: { type: 'openai', text, rate: this.config.openai.speed }
@@ -275,6 +272,8 @@ class TTSService {
       };
 
       await audio.play();
+      // play()成功後にリップシンク接続
+      window.dispatchEvent(new CustomEvent(TTS_AUDIO_READY_EVENT, { detail: audio }));
     } catch (err) {
       console.error('OpenAI TTS合成エラー:', err);
       console.warn('Web Speechにフォールバック');
@@ -295,9 +294,6 @@ class TTSService {
 
     this.callbacks.onStart?.();
 
-    // amplitude lip sync用イベント
-    window.dispatchEvent(new CustomEvent(TTS_AUDIO_READY_EVENT, { detail: audio }));
-
     // 音素推定イベント（テキストベース）
     window.dispatchEvent(new CustomEvent(TTS_PHONEME_READY_EVENT, {
       detail: { type: engineLabel, text, rate: rate ?? 1.0 }
@@ -316,7 +312,10 @@ class TTSService {
         this.callbacks.onError?.(`${engineLabel} TTS再生エラー`);
         reject(new Error(`${engineLabel} TTS再生エラー`));
       };
-      audio.play().catch(reject);
+      audio.play().then(() => {
+        // play()成功後にリップシンク接続
+        window.dispatchEvent(new CustomEvent(TTS_AUDIO_READY_EVENT, { detail: audio }));
+      }).catch(reject);
     });
   }
 
@@ -567,9 +566,6 @@ class TTSService {
     await this.applySinkId(audio);
     this.currentAudio = audio;
 
-    // amplitude lip sync 用イベント
-    window.dispatchEvent(new CustomEvent(TTS_AUDIO_READY_EVENT, { detail: audio }));
-
     return new Promise((resolve, reject) => {
       audio.onended = () => {
         URL.revokeObjectURL(url);
@@ -583,7 +579,10 @@ class TTSService {
         reject(new Error('VOICEVOX再生エラー'));
       };
 
-      audio.play().catch(reject);
+      audio.play().then(() => {
+        // play()成功後にリップシンク接続（再生中のデータがanalyserに流れる）
+        window.dispatchEvent(new CustomEvent(TTS_AUDIO_READY_EVENT, { detail: audio }));
+      }).catch(reject);
     });
   }
 
@@ -608,9 +607,12 @@ class TTSService {
           ? this.synthesizeVoicevoxChunk(sentences[i + 1])
           : null;
 
-        // 最初のチャンクでコールバック＋音素イベント発火
+        // 最初のチャンクでコールバック発火
         if (i === 0) {
           this.callbacks.onStart?.();
+        }
+        // 全チャンクで音素イベント発火（リップシンク用）
+        if (result.phonemes && result.phonemes.length > 0) {
           window.dispatchEvent(new CustomEvent(TTS_PHONEME_READY_EVENT, {
             detail: { type: 'voicevox', phonemes: result.phonemes }
           }));

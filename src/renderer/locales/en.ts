@@ -389,6 +389,8 @@ export const en: Record<string, string> = {
   'settings.character.lipsync.simple': 'Simple (pseudo lip sync)',
   'settings.character.lipsync.amplitude': 'Amplitude analysis (with VOICEVOX)',
   'settings.character.lipsync.hint': 'Phoneme analysis is accurate with VOICEVOX, uses estimation for Web Speech',
+  'settings.character.lipsync.disableMouthForm': 'Disable mouth shape variation',
+  'settings.character.lipsync.disableMouthFormHint': 'Enable this if mouth shape changes cause eyebrow movement on your Live2D model',
 
   'settings.character.preset.section': 'Model Presets',
   'settings.character.preset.label': 'Saved presets',

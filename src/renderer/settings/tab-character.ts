@@ -29,6 +29,7 @@ let physicsEnabledInput: HTMLInputElement;
 let browseBtn: HTMLButtonElement;
 let lipsyncEnabledInput: HTMLInputElement;
 let lipsyncModeSelect: HTMLSelectElement;
+let lipsyncDisableMouthFormInput: HTMLInputElement;
 let showCharacterWindowInput: HTMLInputElement;
 let modelTypeSelect: HTMLSelectElement;
 let live2dModelSettings: HTMLDivElement;
@@ -868,6 +869,7 @@ async function applyCharacterSettingsToForm(char: CharacterSettings) {
   idleMotionInput.value = char.idleMotion || '';
   tapMotionInput.value = char.tapMotion || '';
   physicsEnabledInput.checked = char.physicsEnabled !== false;
+  lipsyncDisableMouthFormInput.checked = char.disableMouthForm ?? false;
   const vrm = char.vrm || { cameraDistance: 1.5, cameraHeight: 1.3, lightIntensity: 1.0, modelX: 0, modelY: 0 };
   vrmCameraDistanceInput.value = String(vrm.cameraDistance);
   vrmCameraDistanceNumInput.value = String(vrm.cameraDistance);
@@ -958,6 +960,7 @@ export async function initTab(settings: Settings): Promise<void> {
   browseBtn = document.getElementById('browse-btn') as HTMLButtonElement;
   lipsyncEnabledInput = document.getElementById('lipsync-enabled') as HTMLInputElement;
   lipsyncModeSelect = document.getElementById('lipsync-mode') as HTMLSelectElement;
+  lipsyncDisableMouthFormInput = document.getElementById('lipsync-disable-mouth-form') as HTMLInputElement;
   showCharacterWindowInput = document.getElementById('show-character-window') as HTMLInputElement;
   modelTypeSelect = document.getElementById('model-type') as HTMLSelectElement;
   live2dModelSettings = document.getElementById('live2d-model-settings') as HTMLDivElement;
@@ -1053,6 +1056,7 @@ export async function initTab(settings: Settings): Promise<void> {
   modelTypeSelect.addEventListener('change', () => { updateModelTypeVisibility(); schedulePreview(); });
   lipsyncEnabledInput.checked = settings.lipSync?.enabled ?? true;
   lipsyncModeSelect.value = settings.lipSync?.mode ?? 'simple';
+  lipsyncDisableMouthFormInput.checked = char.disableMouthForm ?? false;
   physicsEnabledInput.checked = char.physicsEnabled !== false;
 
   // Motion test buttons
@@ -1150,6 +1154,7 @@ export async function collectSettings(settings: Settings): Promise<void> {
     tapMotion: tapMotionInput.value || 'Tap@Body',
     modelType: modelTypeSelect.value as 'live2d' | 'vrm',
     physicsEnabled: physicsEnabledInput.checked,
+    disableMouthForm: lipsyncDisableMouthFormInput.checked,
     vrm: {
       cameraDistance: parseFloat(vrmCameraDistanceNumInput.value) || 1.5,
       cameraHeight: parseFloat(vrmCameraHeightNumInput.value) || 1.3,

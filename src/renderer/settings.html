@@ -2431,6 +2431,13 @@
             </select>
             <div class="hint" data-i18n="settings.character.lipsync.hint">音素解析はVOICEVOX使用時に正確、Web Speech時は推定で動作します</div>
           </div>
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="lipsync-disable-mouth-form">
+              <span data-i18n="settings.character.lipsync.disableMouthForm">口の形変化を無効にする</span>
+            </label>
+            <div class="hint" data-i18n="settings.character.lipsync.disableMouthFormHint">一部のLive2Dモデルで口の形変化が眉毛の動きに影響する場合にONにしてください</div>
+          </div>
         </div>
 
         <div class="section">
@@ -2897,6 +2904,15 @@
                 <button class="btn btn-secondary" id="vrchat-test-btn" data-i18n="common.connecting">接続テスト</button>
               </div>
               <span id="vrchat-status" style="margin-left: 0; margin-top: 6px; display: block; font-size: 12px;"></span>
+            </div>
+            <hr class="section-divider">
+            <div class="form-group">
+              <label>音声リスナー（実験的）</label>
+              <div class="hint">VRChat内の他プレイヤーの音声をキャプチャし、Whisper APIで文字起こしします。エリノが会話に反応できるようになります。</div>
+              <div style="margin-top: 8px; display: flex; gap: 8px; align-items: center;">
+                <button class="btn btn-secondary" id="vrchat-listener-btn">リスナー開始</button>
+                <span id="vrchat-listener-status" style="font-size: 12px; color: var(--text-muted);"></span>
+              </div>
             </div>
           </div>
         </div>
