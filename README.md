@@ -26,7 +26,7 @@ It renders Live2D/VRM characters, connects to the LLM of your choice, and rememb
 
 ## Features
 
-🧠 **Memory that actually works** — Four-layer memory with hybrid BM25 + vector search. Forgetting curve, emotional weighting, pinned facts. [Details below](#memory-system).
+🧠 **Human-like memory** — Four-layer memory with hybrid BM25 + vector search. Forgetting curve, emotional weighting, pinned facts. [Details below](#memory-system).
 
 🎭 **Live2D & VRM** — Both formats in one app. Switch anytime — memory and personality carry over.
 
