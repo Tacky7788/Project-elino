@@ -38,7 +38,9 @@ It renders Live2D/VRM characters, connects to the LLM of your choice, and rememb
 
 🎛️ **Multiple companions** — Character slots with independent memory, personality, and appearance.
 
-🎙️ **Flexible voice** — Whisper STT + OpenAI TTS / VOICEVOX / browser TTS. Mix and match freely.
+🌱 **Self-growth** — Your companion learns from conversations and gradually changes its personality and speech style. Changes require your approval via confirmation dialog.
+
+🎙️ **Voice conversation** — Talk with your mic, get spoken replies. Whisper STT + OpenAI TTS / VOICEVOX / browser TTS.
 
 📡 **Streaming mode** — YouTube chat + OneComme. Your companion talks to your audience. *(WIP)*
 
