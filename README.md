@@ -30,7 +30,7 @@ It renders Live2D/VRM characters, connects to the LLM of your choice, and rememb
 
 🎭 **Live2D & VRM** — Both formats in one app. Switch anytime — memory and personality carry over.
 
-💬 **Real emotions** — Reads conversation tone → maps to expressions and motion in real time. Not scripted.
+💬 **Real emotions** — AI estimates emotion and automatically maps it to Live2D/VRM expressions and motion. *(WIP)*
 
 👄 **Hybrid lip sync** — Phoneme timing × audio amplitude. Natural mouth movement for both model types.
 
