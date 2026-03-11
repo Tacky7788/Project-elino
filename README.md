@@ -42,7 +42,7 @@ It renders Live2D/VRM characters, connects to the LLM of your choice, and rememb
 
 📡 **Streaming mode** — YouTube chat + OneComme. Your companion talks to your audience. *(WIP)*
 
-🌐 **VRChat-ready** — OSC lip sync and expression control.
+🌐 **VRChat integration** — Chat with players in VRChat via OSC chatbox. *(WIP)*
 
 ⚡ **Claude Code integration** — Connect to a running CLI session for AI-powered dev.
 
