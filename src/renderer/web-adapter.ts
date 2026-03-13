@@ -96,6 +96,7 @@ export async function createWebAdapter(): Promise<ElectronAPI> {
     saveState: (s) => ipc('save-state', s),
     getSettings: () => ipc('get-settings'),
     saveSettings: (s) => ipc('save-settings', s),
+    appendVrchatLog: (r) => ipc('append-vrchat-log', r),
     appendHistory: (r) => ipc('append-history', r),
     getHistory: (limit) => ipc('get-history', limit),
     getHistoryCount: () => ipc('get-history-count'),
@@ -154,6 +155,12 @@ export async function createWebAdapter(): Promise<ElectronAPI> {
     vrchatOpenOverlay: async () => {},
     vrchatCloseOverlay: async () => {},
     vrchatInstallVbcable: async () => ({ success: false, error: 'Not available on web' }),
+    vrchatStartListener: async () => ({ success: false, error: 'Not available on web' }),
+    vrchatStopListener: async () => ({ success: false }),
+    vrchatListenerStatus: async () => ({ active: false }),
+    vrchatFindProcess: async () => ({ found: false }),
+    onVrchatListenerTranscript: () => {},
+    onVrchatListenerState: () => {},
 
     // --- Shell ---
     openExternal: async (url) => { window.open(url, '_blank'); },
@@ -215,7 +222,7 @@ export async function createWebAdapter(): Promise<ElectronAPI> {
     selfGrowthApprove: (changes) => ipc('self-growth-approve', changes),
 
     // --- Lip Sync ---
-    sendLipSync: (v) => bus.send('lip-sync', v),
+    sendLipSync: (v, f) => bus.send('lip-sync', v, f),
     sendMotionTrigger: (m) => bus.send('motion-trigger', m),
     sendExpressionChange: (e) => bus.send('expression-change', e),
     ttsTestSpeak: (t) => bus.send('tts-test-speak', t),

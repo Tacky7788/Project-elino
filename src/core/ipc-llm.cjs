@@ -498,6 +498,12 @@ function register(ipcMain, ctx) {
         } else {
             const styleParams = transientState.styleParams || null;
             systemPrompt = buildSystemPrompt(profile, personality, memoryContext, currentState, olderConversationLog, styleParams, settings);
+
+            // VRChat音声キャプチャがあればsystem promptに追記
+            if (payload.context?.vrchatConversation) {
+                systemPrompt += `\n\n[VRChat音声キャプチャ]\n以下はVRChat内で聞こえた他プレイヤーの会話です。あなたに直接話しかけているわけではありません。面白い部分や気になる部分があれば短くコメントしてください。特に言うことがなければ「（聞いてる）」とだけ返してください。\n${payload.context.vrchatConversation}`;
+            }
+
             // 通常会話: stateMessageをuserロール先頭に差し込む（olderConversationLogは除外——recentMessagesに含まれるため）
             const stateMsg = buildStateMessage(memoryContext, currentState, '', lang);
             messagesWithContext = stateMsg

@@ -77,6 +77,11 @@ export const ja: Record<string, string> = {
   'settings.general.theme.system': 'システム連動（自動）',
   'settings.general.theme.light': 'ライト',
   'settings.general.theme.dark': 'ダーク',
+  'settings.general.windowMode.label': 'ウィンドウモード',
+  'settings.general.windowMode.desktop': 'デスクトップ（分離）',
+  'settings.general.windowMode.docked': 'ドッキング（統合）',
+  'settings.general.windowMode.hint': 'ドッキングモードではキャラとチャットを1ウィンドウに統合します',
+  'settings.general.windowMode.restartMsg': 'ウィンドウモードの変更にはアプリの再起動が必要です。今すぐ再起動しますか？',
 
   'settings.general.language.label': '言語 / Language',
   'settings.general.language.ja': '日本語',
@@ -391,6 +396,8 @@ export const ja: Record<string, string> = {
   'settings.character.lipsync.hint': '音素解析はVOICEVOX使用時に正確、Web Speech時は推定で動作します',
   'settings.character.lipsync.disableMouthForm': '口の形変化を無効にする',
   'settings.character.lipsync.disableMouthFormHint': '一部のLive2Dモデルで口の形変化が眉毛の動きに影響する場合にONにしてください',
+  'settings.character.lipsync.scale': '口の開き量',
+  'settings.character.lipsync.scaleHint': 'リップシンクの開口量スケール（0=閉じたまま、1=通常、2=大きく開く）',
 
   'settings.character.preset.section': 'モデルプリセット',
   'settings.character.preset.label': '保存済みプリセット',
@@ -407,6 +414,10 @@ export const ja: Record<string, string> = {
   'settings.character.display.section': '表示',
   'settings.character.display.hint': 'スライダーを動かすとリアルタイムでプレビュー表示されます',
   'settings.character.display.showWindow': 'デスクトップにキャラクターを表示',
+  'settings.character.display.windowMode': 'ウィンドウモード',
+  'settings.character.display.windowModeDesktop': 'デスクトップ（分離）',
+  'settings.character.display.windowModeDocked': 'ドッキング（統合）',
+  'settings.character.display.windowModeHint': '切替は再起動後に反映されます',
   'settings.character.display.modelType': 'モデルタイプ',
   'settings.character.display.winWidth': 'ウィンドウ幅',
   'settings.character.display.winHeight': 'ウィンドウ高さ',
@@ -708,6 +719,7 @@ export const ja: Record<string, string> = {
   'settings.footer.reason.sttEngine': '音声認識エンジン',
   'settings.footer.reason.ttsEngine': '音声合成エンジン',
   'settings.footer.reason.modelType': 'モデルタイプ',
+  'settings.footer.reason.windowMode': 'ウィンドウモード',
 
   // ===== Chat App (index.html + app.ts) =====
   'app.settings.title': '設定',

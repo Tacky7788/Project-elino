@@ -76,12 +76,18 @@ export class VRMRenderer implements CharacterRenderer {
   private settings: CharacterSettings | null = null;
   private animationFrameId: number | null = null;
 
+  // スプリングボーン間引きカウンター
+  private springBoneCounter = 0;
+
   // モーションアニメーション
   private motionAnimFrame: number | null = null;
   private motionBoneOverrides: Record<string, { x?: number; y?: number; z?: number }> = {};
 
   // 現在の表情
   private currentExpression = 'neutral';
+
+  // リップシンクバッファ（expressionManager.update()の後に適用するため）
+  private lipSyncValues: { aa: number; ih: number; ou: number; ee: number; oh: number } | null = null;
 
   // アイドルアニメーション用
   private elapsedTime = 0;
@@ -131,9 +137,10 @@ export class VRMRenderer implements CharacterRenderer {
       canvas,
       alpha: true,
       antialias: true,
+      preserveDrawingBuffer: true,
     });
+    this.renderer.setPixelRatio(settings.resolution || 1);
     this.renderer.setSize(settings.window.width, settings.window.height);
-    this.renderer.setPixelRatio(window.devicePixelRatio);
 
     // シーン
     this.scene = new T.Scene();
@@ -283,20 +290,25 @@ export class VRMRenderer implements CharacterRenderer {
     this.fpsInterval = 1000 / (this.settings?.fps || 30);
     this.lastFrameTime = performance.now();
 
-    const animate = (now: number) => {
+    const animate = () => {
       this.animationFrameId = requestAnimationFrame(animate);
 
-      const elapsed = now - this.lastFrameTime;
-      if (elapsed < this.fpsInterval) return;
-      this.lastFrameTime = now - (elapsed % this.fpsInterval);
+      // ウィンドウ非表示時はスキップ
+      if (document.hidden) return;
+
+      const now = performance.now();
+      if (now - this.lastFrameTime < this.fpsInterval) return;
+      this.lastFrameTime = now;
 
       if (!this.renderer || !this.scene || !this.camera || !this.clock) return;
 
       const delta = this.clock.getDelta();
       this.elapsedTime += delta;
 
-      // アイドルアニメーション（モーション未実行時）
-      if (!this.motionAnimFrame) {
+      // モーション再生中はモーション更新、それ以外はアイドル
+      if (this.motionType) {
+        this.updateMotion();
+      } else {
         this.updateIdleAnimation();
       }
 
@@ -306,9 +318,29 @@ export class VRMRenderer implements CharacterRenderer {
       // サッカード（ランダム視線移動）
       this.updateSaccade(delta);
 
-      // VRM更新（スプリングボーン等）
+      // VRM更新（スプリングボーンを間引いてCPU負荷削減）
       if (this.vrm) {
-        this.vrm.update(delta);
+        this.vrm.humanoid.update();
+        if (this.vrm.lookAt) this.vrm.lookAt.update(delta);
+        if (this.vrm.expressionManager) {
+          this.vrm.expressionManager.update();
+          // リップシンクはexpressionManager.update()の後に適用（上書きされないように）
+          if (this.lipSyncValues) {
+            this.vrm.expressionManager.setValue('aa', this.lipSyncValues.aa);
+            this.vrm.expressionManager.setValue('ih', this.lipSyncValues.ih);
+            this.vrm.expressionManager.setValue('ou', this.lipSyncValues.ou);
+            this.vrm.expressionManager.setValue('ee', this.lipSyncValues.ee);
+            this.vrm.expressionManager.setValue('oh', this.lipSyncValues.oh);
+          }
+        }
+        if ((this.vrm as any).nodeConstraintManager) {
+          (this.vrm as any).nodeConstraintManager.update();
+        }
+        // スプリングボーンは2フレームに1回（最もCPU負荷が高い処理）
+        this.springBoneCounter++;
+        if (this.springBoneCounter % 2 === 0 && (this.vrm as any).springBoneManager) {
+          (this.vrm as any).springBoneManager.update(delta * 2);
+        }
       }
 
       // モーションのボーンオーバーライド適用
@@ -317,7 +349,7 @@ export class VRMRenderer implements CharacterRenderer {
       this.renderer.render(this.scene, this.camera);
     };
 
-    animate(performance.now());
+    animate();
   }
 
   private updateIdleAnimation(): void {
@@ -522,19 +554,17 @@ export class VRMRenderer implements CharacterRenderer {
   }
 
   setMouthOpen(openY: number, form?: number): void {
-    if (!this.vrm || !this.vrm.expressionManager) return;
-
+    // リップシンクスケール適用
+    const scale = this.settings?.lipSyncScale ?? 1.0;
+    const scaledOpenY = Math.min(openY * scale, 1.0);
     // 感情に応じたリップシンク重み（aituber-kit準拠: neutral=50%, 他=25%）
     const weight = this.currentExpression === 'neutral' ? 0.5 : 0.25;
 
     const f = form ?? 0;
-    const weights = calculateVowelWeights(openY * weight, f);
+    const weights = calculateVowelWeights(scaledOpenY * weight, f);
 
-    this.vrm.expressionManager.setValue('aa', weights.aa);
-    this.vrm.expressionManager.setValue('ih', weights.ih);
-    this.vrm.expressionManager.setValue('ou', weights.ou);
-    this.vrm.expressionManager.setValue('ee', weights.ee);
-    this.vrm.expressionManager.setValue('oh', weights.oh);
+    // バッファに保存（メインループ内でexpressionManager.update()の後に適用）
+    this.lipSyncValues = weights;
   }
 
   private removeCurrentVRM(): void {
@@ -572,6 +602,7 @@ export class VRMRenderer implements CharacterRenderer {
 
     // リサイズ
     if (this.renderer) {
+      this.renderer.setPixelRatio(settings.resolution || 1);
       this.renderer.setSize(settings.window.width, settings.window.height);
     }
     if (this.camera) {
@@ -613,16 +644,21 @@ export class VRMRenderer implements CharacterRenderer {
     this.applyModelOffset();
   }
 
+  resize(width: number, height: number): void {
+    if (!this.renderer || !this.camera) return;
+    this.renderer.setSize(width, height);
+    this.camera.aspect = width / height;
+    this.camera.updateProjectionMatrix();
+  }
+
   destroy(): void {
-    if (this.animationFrameId) {
+    if (this.animationFrameId != null) {
       cancelAnimationFrame(this.animationFrameId);
       this.animationFrameId = null;
     }
 
-    if (this.motionAnimFrame) {
-      cancelAnimationFrame(this.motionAnimFrame);
-      this.motionAnimFrame = null;
-    }
+    this.motionType = null;
+    this.motionAnimFrame = null;
     this.motionBoneOverrides = {};
 
     this.removeCurrentVRM();
@@ -640,91 +676,71 @@ export class VRMRenderer implements CharacterRenderer {
   }
 
   // --- モーションアニメーション ---
+  // モーション状態（メインループ内で評価、独自rAFは持たない）
+  private motionStart = 0;
+  private motionDuration = 0;
+  private motionType: 'celebrate' | 'nod' | 'shrug' | null = null;
 
-  private animateCelebrate(): void {
-    const start = performance.now();
-    const duration = 2000;
-    const self = this;
+  /** メインループから毎フレーム呼ばれる */
+  private updateMotion(): void {
+    if (!this.motionType) return;
 
-    this.setExpression('happy');
-
-    function tick() {
-      const elapsed = performance.now() - start;
-      if (elapsed > duration) {
-        self.motionBoneOverrides = {};
-        self.motionAnimFrame = null;
-        self.setExpression('happy');
-        return;
-      }
-
-      const t = elapsed / duration;
-      const bounce = Math.sin(elapsed * 0.012) * 0.05 * (1 - t);
-      const headTilt = Math.sin(elapsed * 0.008) * 0.1 * (1 - t);
-
-      self.motionBoneOverrides = {
-        'spine': { z: bounce },
-        'head': { z: headTilt },
-      };
-
-      const laughCycle = Math.sin(elapsed * 0.015) * 0.5 + 0.5;
-      self.setMouthOpen(laughCycle * 0.8, 0.6);
-
-      self.motionAnimFrame = requestAnimationFrame(tick);
+    const elapsed = performance.now() - this.motionStart;
+    if (elapsed > this.motionDuration) {
+      this.motionBoneOverrides = {};
+      this.motionType = null;
+      this.motionAnimFrame = null;
+      return;
     }
 
-    this.motionAnimFrame = requestAnimationFrame(tick);
+    const t = elapsed / this.motionDuration;
+
+    switch (this.motionType) {
+      case 'celebrate': {
+        const bounce = Math.sin(elapsed * 0.012) * 0.05 * (1 - t);
+        const headTilt = Math.sin(elapsed * 0.008) * 0.1 * (1 - t);
+        this.motionBoneOverrides = { 'spine': { z: bounce }, 'head': { z: headTilt } };
+        const laughCycle = Math.sin(elapsed * 0.015) * 0.5 + 0.5;
+        this.setMouthOpen(laughCycle * 0.8, 0.6);
+        break;
+      }
+      case 'nod': {
+        const nodCurve = Math.sin(elapsed * 0.016) * 0.15 * (1 - t);
+        this.motionBoneOverrides = { 'head': { x: nodCurve } };
+        break;
+      }
+      case 'shrug': {
+        const shrugAmount = Math.sin(t * Math.PI) * 0.2;
+        const headTilt = Math.sin(t * Math.PI) * 0.1;
+        this.motionBoneOverrides = {
+          'leftUpperArm': { z: shrugAmount },
+          'rightUpperArm': { z: -shrugAmount },
+          'head': { z: headTilt },
+        };
+        break;
+      }
+    }
+  }
+
+  private animateCelebrate(): void {
+    this.setExpression('happy');
+    this.motionStart = performance.now();
+    this.motionDuration = 2000;
+    this.motionType = 'celebrate';
+    this.motionAnimFrame = 1; // フラグとして（メインループがupdateIdleをスキップする）
   }
 
   private animateNod(): void {
-    const start = performance.now();
-    const duration = 800;
-    const self = this;
-
-    function tick() {
-      const elapsed = performance.now() - start;
-      if (elapsed > duration) {
-        self.motionBoneOverrides = {};
-        self.motionAnimFrame = null;
-        return;
-      }
-
-      const nodCurve = Math.sin(elapsed * 0.016) * 0.15 * (1 - elapsed / duration);
-      self.motionBoneOverrides = {
-        'head': { x: nodCurve },
-      };
-
-      self.motionAnimFrame = requestAnimationFrame(tick);
-    }
-
-    this.motionAnimFrame = requestAnimationFrame(tick);
+    this.motionStart = performance.now();
+    this.motionDuration = 800;
+    this.motionType = 'nod';
+    this.motionAnimFrame = 1;
   }
 
   private animateShrug(): void {
-    const start = performance.now();
-    const duration = 1000;
-    const self = this;
-
-    function tick() {
-      const elapsed = performance.now() - start;
-      if (elapsed > duration) {
-        self.motionBoneOverrides = {};
-        self.motionAnimFrame = null;
-        return;
-      }
-
-      const t = elapsed / duration;
-      const shrugAmount = Math.sin(t * Math.PI) * 0.2;
-      const headTilt = Math.sin(t * Math.PI) * 0.1;
-
-      self.motionBoneOverrides = {
-        'leftUpperArm': { z: shrugAmount },
-        'rightUpperArm': { z: -shrugAmount },
-        'head': { z: headTilt },
-      };
-
-      self.motionAnimFrame = requestAnimationFrame(tick);
-    }
-
-    this.motionAnimFrame = requestAnimationFrame(tick);
+    this.motionStart = performance.now();
+    this.motionDuration = 1000;
+    this.motionType = 'shrug';
+    this.motionAnimFrame = 1;
   }
 }

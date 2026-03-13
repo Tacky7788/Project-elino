@@ -76,6 +76,8 @@ let vrchatRedetectBtn: HTMLButtonElement;
 let vrchatRedetectFoundBtn: HTMLButtonElement;
 let vrchatManualSelectBtn: HTMLButtonElement;
 let vrchatAutoDetectBtn: HTMLButtonElement;
+let vrchatListenerBtn: HTMLButtonElement;
+let vrchatListenerStatusSpan: HTMLSpanElement;
 
 // SelfGrowth DOM
 let selfGrowthEnabledInput: HTMLInputElement;
@@ -428,6 +430,44 @@ export async function initTab(settings: Settings): Promise<void> {
     await populateAudioDevices(vrchatAudioDeviceSelect.value || _detectedVbCableId || '');
   });
   vrchatAutoDetectBtn.addEventListener('click', () => { _useManualSelect = false; runVbCableSetup(); });
+
+  // Audio Listener
+  vrchatListenerBtn = document.getElementById('vrchat-listener-btn') as HTMLButtonElement;
+  vrchatListenerStatusSpan = document.getElementById('vrchat-listener-status') as HTMLSpanElement;
+  vrchatListenerBtn.addEventListener('click', async () => {
+    const status = await platform.vrchatListenerStatus();
+    if (status.active) {
+      vrchatListenerBtn.disabled = true;
+      const result = await platform.vrchatStopListener();
+      vrchatListenerBtn.disabled = false;
+      if (result.success) {
+        vrchatListenerBtn.textContent = 'リスナー開始';
+        vrchatListenerStatusSpan.textContent = '停止中';
+        vrchatListenerStatusSpan.style.color = 'var(--text-muted)';
+      }
+    } else {
+      vrchatListenerBtn.disabled = true;
+      vrchatListenerStatusSpan.textContent = 'VRChat検索中...';
+      const result = await platform.vrchatStartListener();
+      vrchatListenerBtn.disabled = false;
+      if (result.success) {
+        vrchatListenerBtn.textContent = 'リスナー停止';
+        vrchatListenerStatusSpan.textContent = `キャプチャ中 (PID: ${result.pid})`;
+        vrchatListenerStatusSpan.style.color = 'var(--accent)';
+      } else {
+        vrchatListenerStatusSpan.textContent = result.error || '開始失敗';
+        vrchatListenerStatusSpan.style.color = 'var(--danger, #e74c3c)';
+      }
+    }
+  });
+  // 初期状態を反映
+  platform.vrchatListenerStatus?.().then((status: { active: boolean; pid?: string }) => {
+    if (status.active) {
+      vrchatListenerBtn.textContent = 'リスナー停止';
+      vrchatListenerStatusSpan.textContent = `キャプチャ中 (PID: ${status.pid})`;
+      vrchatListenerStatusSpan.style.color = 'var(--accent)';
+    }
+  });
 
   // SelfGrowth
   selfGrowthEnabledInput = document.getElementById('self-growth-enabled') as HTMLInputElement;

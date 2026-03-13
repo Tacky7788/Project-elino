@@ -164,6 +164,7 @@ function shouldAutoScroll(): boolean {
 let _segmentCancelFn: (() => void) | null = null;
 let _segmentTypingEl: HTMLElement | null = null;
 // インクリメンタルTTS用文バッファ
+let _incrementalSentenceBuf = '';
 
 // LLMイベントリスナー（初期化時に1回だけ登録）
 platform.onLLMDelta((delta) => {
@@ -174,6 +175,26 @@ platform.onLLMDelta((delta) => {
     if (cleanDelta) {
       streamingMessageDiv.textContent += cleanDelta;
       if (shouldAutoScroll()) messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    // インクリメンタルTTS: 文末を検出してqueueChunkに送る
+    const ttsEnabled = currentSettings?.tts?.enabled !== false && currentSettings?.tts?.engine !== 'none';
+    const segmentSplitEnabled = currentSettings?.chat?.segmentSplit === true;
+    if (ttsEnabled && !segmentSplitEnabled) {
+      _incrementalSentenceBuf += cleanDelta;
+      // 文末（。！？\n）で区切ってキューに送る
+      const sentenceEnd = /([^。！？!\?\n]*[。！？!\?\n])/g;
+      let match: RegExpExecArray | null;
+      let lastIdx = 0;
+      while ((match = sentenceEnd.exec(_incrementalSentenceBuf)) !== null) {
+        const sentence = match[1].trim();
+        if (sentence) {
+          ttsService.queueChunk(sentence);
+        }
+        lastIdx = sentenceEnd.lastIndex;
+      }
+      // 未確定の残りをバッファに残す
+      _incrementalSentenceBuf = _incrementalSentenceBuf.slice(lastIdx);
     }
   }
 });
@@ -350,8 +371,16 @@ platform.onLLMDone(async () => {
   console.log('✅ 会話完了');
 
   // TTS読み上げ（設定が有効な場合）
-  if (ttsEnabled && !perSegmentTTS) {
-    // 通常TTS（セグメント分割なし — 全文一括読み上げ）
+  // インクリメンタルTTSが動いていた場合: 残りバッファをフラッシュし、一括TTSはスキップ
+  const incrementalActive = ttsService.isIncrementalActive() || _incrementalSentenceBuf.length > 0;
+  if (incrementalActive && _incrementalSentenceBuf.trim()) {
+    // 最後の文末なしバッファをフラッシュ
+    ttsService.queueChunk(_incrementalSentenceBuf.trim());
+  }
+  _incrementalSentenceBuf = '';
+
+  if (ttsEnabled && !perSegmentTTS && !incrementalActive) {
+    // 通常TTS（セグメント分割なし、インクリメンタル未使用 — 全文一括読み上げ）
     speakWithLipSync(cleanText);
   } else if (!ttsEnabled) {
     // TTS無効: ここで doNotDisturb をリセット
@@ -365,6 +394,26 @@ platform.onLLMDone(async () => {
   // コメントキュー処理: LLM完了後に次のコメントを処理
   isProcessingComment = false;
   setTimeout(() => processCommentQueue(), 1000);
+
+  // VRChat: コンパニオンの返答を会話履歴に追加 + ログ保存
+  if (_vrchatConversationHistory.length > 0) {
+    _vrchatConversationHistory.push(`- [コンパニオン] ${cleanText}`);
+    if (_vrchatConversationHistory.length > VRCHAT_HISTORY_MAX) {
+      _vrchatConversationHistory = _vrchatConversationHistory.slice(-VRCHAT_HISTORY_MAX);
+    }
+    platform.appendVrchatLog({
+      ts: new Date().toISOString(),
+      source: 'vrchat',
+      role: 'assistant',
+      speaker: 'elino',
+      text: cleanText,
+      sessionId: _vrchatSessionId
+    }).catch(err => console.warn('⚠️ VRChatログ保存失敗:', err));
+  }
+  if (_vrchatPendingFlush) {
+    _vrchatPendingFlush = false;
+    setTimeout(() => flushVrchatTranscripts(), 500);
+  }
 });
 
 platform.onLLMError((error) => {
@@ -416,6 +465,7 @@ platform.onProactiveTrigger(async (payload) => {
   isStreaming = true;
   platform.sendMotionTrigger?.('thinking');
   currentAssistantText = '';
+  _incrementalSentenceBuf = '';
   streamingMessageDiv = addMessage('assistant', '', false);
 
   // Interrupt Gate: ストリーミング開始を通知
@@ -546,34 +596,68 @@ platform.onExternalSpeak((text: string) => {
 // VRChat音声リスナー: 他プレイヤーの発言をバッチで受信→まとめてLLMに送る
 let _vrchatTranscriptBuffer: string[] = [];
 let _vrchatBatchTimer: ReturnType<typeof setTimeout> | null = null;
+// VRChat会話の直近履歴（コンテキスト保持用）
+let _vrchatConversationHistory: string[] = [];
 const VRCHAT_BATCH_DELAY = 4000; // 4秒間溜めてからまとめて送る
+const VRCHAT_HISTORY_MAX = 20; // 直近20発言まで保持
+// ストリーミング完了後にVRChatバッファを再フラッシュするフラグ
+let _vrchatPendingFlush = false;
+// VRChatセッションID（リスナー起動ごとに生成）
+let _vrchatSessionId = `${new Date().toISOString().replace(/[:.]/g, '-')}_${Math.random().toString(36).slice(2, 8)}`;
 
 function flushVrchatTranscripts() {
   _vrchatBatchTimer = null;
   if (_vrchatTranscriptBuffer.length === 0) return;
 
-  const lines = _vrchatTranscriptBuffer.map(t => `- ${t}`).join('\n');
+  const newLines = _vrchatTranscriptBuffer.map(t => `- ${t}`);
   _vrchatTranscriptBuffer = [];
 
-  // UIに表示（ユーザー発話とは別枠）
-  addMessage('user', `[VRChat会話]\n${lines}`, true);
-
-  // currentMessagesには積まない（記憶汚染防止 — 配信コメントと同じ方式）
-  // context経由でsystem promptに注入する
-  if (!isStreaming) {
-    isStreaming = true;
-    platform.sendMotionTrigger?.('thinking');
-    platform.setBrainState({ doNotDisturb: true });
-    currentAssistantText = '';
-    streamingMessageDiv = addMessage('assistant', '', false);
-    platform.streamLLM({
-      messages: currentMessages,
-      isProactive: false,
-      context: { vrchatConversation: lines },
-      useOpenClaw: false,
-      useClaudeCode: false
-    });
+  // 履歴に追加（直近N件を保持）
+  _vrchatConversationHistory.push(...newLines);
+  if (_vrchatConversationHistory.length > VRCHAT_HISTORY_MAX) {
+    _vrchatConversationHistory = _vrchatConversationHistory.slice(-VRCHAT_HISTORY_MAX);
   }
+
+  // UIに表示
+  addMessage('user', `[VRChat会話]\n${newLines.join('\n')}`, true);
+
+  // vrchat-log.jsonlに保存（同一flushは同じtsを使う）
+  const flushTs = new Date().toISOString();
+  for (const line of newLines) {
+    const rawText = line.replace(/^- /, '');
+    platform.appendVrchatLog({
+      ts: flushTs,
+      source: 'vrchat',
+      role: 'user',
+      speaker: 'player',
+      text: rawText,
+      rawText: line,
+      sessionId: _vrchatSessionId
+    }).catch(err => console.warn('⚠️ VRChatログ保存失敗:', err));
+  }
+
+  // ストリーミング中なら次回にまわす（履歴には残ってるので失われない）
+  if (isStreaming) {
+    _vrchatPendingFlush = true;
+    return;
+  }
+
+  // 直近の会話履歴を全部コンテキストに入れる
+  const fullContext = _vrchatConversationHistory.join('\n');
+
+  isStreaming = true;
+  platform.sendMotionTrigger?.('thinking');
+  platform.setBrainState({ doNotDisturb: true });
+  currentAssistantText = '';
+  _incrementalSentenceBuf = '';
+  streamingMessageDiv = addMessage('assistant', '', false);
+  platform.streamLLM({
+    messages: currentMessages,
+    isProactive: false,
+    context: { vrchatConversation: fullContext },
+    useOpenClaw: false,
+    useClaudeCode: false
+  });
 }
 
 platform.onVrchatListenerTranscript?.((text: string) => {
@@ -938,6 +1022,7 @@ function processCommentQueue() {
   platform.sendMotionTrigger?.('thinking');
   platform.setBrainState({ doNotDisturb: true });
   currentAssistantText = '';
+  _incrementalSentenceBuf = '';
   streamingMessageDiv = addMessage('assistant', '', false);
 
   platform.streamLLM({
@@ -1193,6 +1278,7 @@ async function sendMessage() {
   // Interrupt Gate: ストリーミング開始を通知
   platform.setBrainState({ doNotDisturb: true });
   currentAssistantText = '';
+  _incrementalSentenceBuf = '';
   streamingMessageDiv = addMessage('assistant', '', false);
 
   // LLMストリーミング開始（直近N件のみ送信）

@@ -34,6 +34,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getSettings: () => ipcRenderer.invoke('get-settings'),
   saveSettings: (settings) => ipcRenderer.invoke('save-settings', settings),
 
+  // VRChat Log
+  appendVrchatLog: (record) => ipcRenderer.invoke('append-vrchat-log', record),
+
   // History
   appendHistory: (record) => ipcRenderer.invoke('append-history', record),
   getHistory: (limit) => ipcRenderer.invoke('get-history', limit),
@@ -104,6 +107,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
   vrchatOpenOverlay: () => ipcRenderer.invoke('vrchat:open-overlay'),
   vrchatCloseOverlay: () => ipcRenderer.invoke('vrchat:close-overlay'),
   vrchatInstallVbcable: () => ipcRenderer.invoke('vrchat:install-vbcable'),
+  vrchatStartListener: () => ipcRenderer.invoke('vrchat:start-listener'),
+  vrchatStopListener: () => ipcRenderer.invoke('vrchat:stop-listener'),
+  vrchatListenerStatus: () => ipcRenderer.invoke('vrchat:listener-status'),
+  vrchatFindProcess: () => ipcRenderer.invoke('vrchat:find-process'),
+  onVrchatListenerTranscript: (cb) => ipcRenderer.on('vrchat-listener-transcript', (_e, text) => cb(text)),
+  onVrchatListenerState: (cb) => ipcRenderer.on('vrchat-listener-state', (_e, state) => cb(state)),
 
   // Shell
   openExternal: (url) => ipcRenderer.invoke('open-external', url),
@@ -212,7 +221,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   selfGrowthApprove: (changes) => ipcRenderer.invoke('self-growth-approve', changes),
 
   // Lip Sync（ウィンドウ間通信）
-  sendLipSync: (value) => ipcRenderer.send('lip-sync', value),
+  sendLipSync: (value, form) => ipcRenderer.send('lip-sync', value, form),
   sendMotionTrigger: (motion) => ipcRenderer.send('motion-trigger', motion),
   sendExpressionChange: (expression) => ipcRenderer.send('expression-change-send', expression),
   ttsTestSpeak: (text) => ipcRenderer.send('tts-test-speak', text),
@@ -222,7 +231,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   },
   onLipSync: (callback) => {
     ipcRenderer.removeAllListeners('lip-sync');
-    ipcRenderer.on('lip-sync', (_, value) => callback(value));
+    ipcRenderer.on('lip-sync', (_, value, form) => callback(value, form));
   },
 
   // Expression Change（感情による表情変更）
@@ -312,5 +321,19 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onSdkSetupFileSelected: (callback) => {
     ipcRenderer.removeAllListeners('sdk-setup:file-selected');
     ipcRenderer.on('sdk-setup:file-selected', (_, filePath) => callback(filePath));
-  }
+  },
+
+  // Character window: hit-test click-through + manual drag
+  setIgnoreMouseEvents: (ignore, opts) => ipcRenderer.send('set-ignore-mouse-events', ignore, opts),
+  moveWindowBy: (dx, dy) => ipcRenderer.send('move-window-by', dx, dy),
+
+  // Docked mode: window controls
+  minimizeWindow: () => ipcRenderer.invoke('minimize-window'),
+  hideWindow: () => ipcRenderer.invoke('hide-window'),
+
+  // Docked mode: tab switching
+  onSwitchDockedTab: (callback) => {
+    ipcRenderer.removeAllListeners('switch-docked-tab');
+    ipcRenderer.on('switch-docked-tab', (_, tabName) => callback(tabName));
+  },
 });

@@ -1848,6 +1848,12 @@ const DEFAULT_SETTINGS = {
             surprised: 'Expression_Surprised',
             thinking: 'Expression_Thinking',
             neutral: ''
+        },
+        audioListener: {
+            enabled: false,
+            gain: 16,
+            vadThreshold: 80,
+            silenceDuration: 1500,
         }
     },
     memory: {
@@ -1856,7 +1862,8 @@ const DEFAULT_SETTINGS = {
     externalApi: {
         enabled: false,
         port: 5174
-    }
+    },
+    windowMode: 'desktop'
 };
 
 module.exports = {

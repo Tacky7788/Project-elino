@@ -167,22 +167,29 @@ function createTray() {
             label: '表示', click: () => {
                 const cw = _ctx.characterWindow;
                 const chatW = _ctx.chatWindow;
+                const dw = _ctx.dockedWindow;
                 if (cw) cw.show();
                 if (chatW) chatW.show();
+                if (dw) dw.show();
             }
         },
         {
             label: '非表示', click: () => {
                 const cw = _ctx.characterWindow;
                 const chatW = _ctx.chatWindow;
+                const dw = _ctx.dockedWindow;
                 if (cw) cw.hide();
                 if (chatW) chatW.hide();
+                if (dw) dw.hide();
             }
         },
         {
             label: 'チャット開閉', click: () => {
                 const chatW = _ctx.chatWindow;
-                if (chatW) {
+                const dw = _ctx.dockedWindow;
+                if (dw) {
+                    dw.isVisible() ? dw.hide() : dw.show();
+                } else if (chatW) {
                     chatW.isVisible() ? chatW.hide() : chatW.show();
                 }
             }
@@ -190,8 +197,14 @@ function createTray() {
         { type: 'separator' },
         { label: '設定', click: () => createSettingsWindow() },
         { type: 'separator' },
-        { label: 'DevTools (Chat)', click: () => { const w = _ctx.chatWindow; w && w.webContents.openDevTools({ mode: 'detach' }); } },
-        { label: 'DevTools (Char)', click: () => { const w = _ctx.characterWindow; w && w.webContents.openDevTools({ mode: 'detach' }); } },
+        { label: 'DevTools (Chat)', click: () => {
+            const w = _ctx.dockedWindow || _ctx.chatWindow;
+            w && w.webContents.openDevTools({ mode: 'detach' });
+        }},
+        { label: 'DevTools (Char)', click: () => {
+            const w = _ctx.dockedWindow || _ctx.characterWindow;
+            w && w.webContents.openDevTools({ mode: 'detach' });
+        }},
         { type: 'separator' },
         { label: '終了', click: () => { app.isQuitting = true; app.quit(); } }
     ]);
@@ -199,6 +212,11 @@ function createTray() {
     tray.setToolTip('Desktop Companion');
     tray.setContextMenu(contextMenu);
     tray.on('click', () => {
+        const dw = _ctx.dockedWindow;
+        if (dw) {
+            dw.isVisible() ? dw.hide() : dw.show();
+            return;
+        }
         const cw = _ctx.characterWindow;
         const chatW = _ctx.chatWindow;
         if (cw) {
@@ -265,8 +283,26 @@ function register(ipcMain, ctx) {
         };
     });
 
-    // Lip Sync: chat → character 転送
+    // Character window: hit-test click-through（透明部分をクリックスルー）
+    ipcMain.on('set-ignore-mouse-events', (event, ignore, opts) => {
+        const w = ctx.characterWindow;
+        if (w && !w.isDestroyed()) {
+            w.setIgnoreMouseEvents(ignore, opts || {});
+        }
+    });
+
+    // Character window: manual drag（-webkit-app-region: dragの代替）
+    ipcMain.on('move-window-by', (event, dx, dy) => {
+        const w = ctx.characterWindow;
+        if (w && !w.isDestroyed()) {
+            const [x, y] = w.getPosition();
+            w.setPosition(x + dx, y + dy);
+        }
+    });
+
+    // Lip Sync: chat → character 転送（desktopモード時のみ。dockedモードではIPC不要）
     ipcMain.on('lip-sync', (event, value, form) => {
+        // dockedモードではsendLipSyncをrenderer側でパッチしているのでここには来ない
         const w = ctx.characterWindow;
         if (w && !w.isDestroyed()) {
             w.webContents.send('lip-sync', value, form);
@@ -274,6 +310,7 @@ function register(ipcMain, ctx) {
     });
 
     ipcMain.on('motion-trigger', (event, motion) => {
+        // dockedモードではcharacterWindow = dockedWindowなのでそのまま動く
         const w = ctx.characterWindow;
         if (w && !w.isDestroyed()) {
             w.webContents.send('motion-trigger', motion);
@@ -287,7 +324,7 @@ function register(ipcMain, ctx) {
         }
     });
 
-    // 設定画面からTTSテスト
+    // 設定画面からTTSテスト（dockedモードではchatWindow = dockedWindowなので自動的にルーティング）
     ipcMain.on('tts-test-speak', (event, text) => {
         const w = ctx.chatWindow;
         if (w && !w.isDestroyed()) {
@@ -300,8 +337,29 @@ function register(ipcMain, ctx) {
         app.exit(0);
     });
 
+    // Docked mode: window controls (minimize/hide)
+    ipcMain.handle('minimize-window', (event) => {
+        const win = BrowserWindow.fromWebContents(event.sender);
+        if (win) win.minimize();
+    });
+
+    ipcMain.handle('hide-window', (event) => {
+        const win = BrowserWindow.fromWebContents(event.sender);
+        if (win) win.hide();
+    });
+
     // 設定をリアルタイム反映
     ipcMain.handle('apply-character-settings', async (event, charSettings) => {
+        // dockedモードではウィンドウリサイズをスキップ（dockedWindowはcharacterWindowを兼ねる）
+        if (ctx.dockedWindow) {
+            // 設定変更イベントだけ送る（キャラレンダラーの更新に使われる）
+            const dw = ctx.dockedWindow;
+            if (dw && !dw.isDestroyed()) {
+                dw.webContents.send('settings-changed', charSettings);
+            }
+            return { success: true };
+        }
+
         const cw = ctx.characterWindow;
 
         // Show/hide character window
@@ -357,6 +415,66 @@ function register(ipcMain, ctx) {
     });
 }
 
+async function createDockedWindow() {
+    const { isDev, DEV_SERVER_URL, appRoot, loadSettings } = _ctx;
+    const { DEFAULT_SETTINGS } = _ctx.constants;
+
+    const { width, height } = screen.getPrimaryDisplay().workAreaSize;
+    const settings = await loadSettings();
+
+    const theme = settings.theme || 'system';
+    const isDark = theme === 'dark' || (theme === 'system' && nativeTheme.shouldUseDarkColors);
+    const bgColor = isDark ? '#18181b' : '#f8f9fa';
+
+    const iconPath = path.join(appRoot, 'assets', 'icon.png');
+
+    const win = new BrowserWindow({
+        width: 900,
+        height: 600,
+        frame: false,
+        transparent: false,
+        backgroundColor: bgColor,
+        alwaysOnTop: false,
+        resizable: true,
+        skipTaskbar: false,
+        show: true,
+        icon: iconPath,
+        webPreferences: {
+            devTools: isDev,
+            nodeIntegration: false,
+            contextIsolation: true,
+            sandbox: false, // AudioContext（リップシンク振幅解析）に必要
+            preload: path.join(appRoot, 'preload.cjs')
+        },
+    });
+
+    if (isDev) {
+        win.loadURL(`${DEV_SERVER_URL}/docked.html`);
+    } else {
+        win.loadFile(path.join(appRoot, 'dist', 'renderer', 'docked.html'));
+    }
+
+    win.on('close', (e) => {
+        if (!app.isQuitting) {
+            e.preventDefault();
+            win.hide();
+        }
+    });
+
+    win.on('closed', () => {
+        _ctx.dockedWindow = null;
+        _ctx.characterWindow = null;
+        _ctx.chatWindow = null;
+    });
+
+    // dockedモードではcharacterWindowとchatWindowを同一ウィンドウに向ける
+    // これによりIPC転送（lip-sync, expression-change等）がそのまま動く
+    _ctx.dockedWindow = win;
+    _ctx.characterWindow = win;
+    _ctx.chatWindow = win;
+    console.log('🪟 Dockedウィンドウ作成');
+}
+
 function createVrOverlayWindow() {
     const { isDev, DEV_SERVER_URL, appRoot } = _ctx;
 
@@ -397,4 +515,4 @@ function createVrOverlayWindow() {
     console.log('🎮 VRオーバーレイウィンドウ作成');
 }
 
-module.exports = { register, createCharacterWindow, createChatWindow, createSettingsWindow, createTray, createVrOverlayWindow };
+module.exports = { register, createCharacterWindow, createChatWindow, createDockedWindow, createSettingsWindow, createTray, createVrOverlayWindow };

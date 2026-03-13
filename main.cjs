@@ -59,7 +59,7 @@ const ipcVrchat = require("./src/core/ipc-vrchat.cjs");
 const oscClient = require("./src/core/osc-client.cjs");
 const brainTick = require("./src/core/brain-tick.cjs");
 
-app.disableHardwareAcceleration();
+// app.disableHardwareAcceleration(); // WebGL(VRM/Live2D)がCPUフォールバックになるため無効化
 
 // ====== 環境判定 ======
 const isDev = process.env.NODE_ENV === 'development';
@@ -79,6 +79,7 @@ let characterWindow = null;
 let chatWindow = null;
 let settingsWindow = null;
 let vrOverlayWindow = null;
+let dockedWindow = null;
 
 // ====== Single Writer: キャッシュ + キュー ======
 let _memoryV2Cache = null;
@@ -420,6 +421,8 @@ const ctx = {
     set settingsWindow(w) { settingsWindow = w; },
     get vrOverlayWindow() { return vrOverlayWindow; },
     set vrOverlayWindow(w) { vrOverlayWindow = w; },
+    get dockedWindow() { return dockedWindow; },
+    set dockedWindow(w) { dockedWindow = w; },
 
     // Single Writer キャッシュ
     getMemoryV2Cache: () => _memoryV2Cache,
@@ -755,23 +758,35 @@ app.whenReady().then(async () => {
     await ensureCompanionDir();
     await ipcSlot.migrateToSlots();
 
-    // Check if character window should be shown
+    // Read windowMode and character visibility settings
     let showCharWindow = true;
+    let windowMode = 'desktop';
     try {
-        const settingsPath = getFilePaths().SETTINGS_FILE;
-        const s = JSON.parse(fsSync.readFileSync(settingsPath, 'utf-8'));
+        const s = JSON.parse(fsSync.readFileSync(SETTINGS_FILE, 'utf-8'));
         if (s.character?.showWindow === false) showCharWindow = false;
-    } catch {}
-
-    if (showCharWindow) {
-        await ipcWindow.createCharacterWindow();
+        if (s.windowMode) windowMode = s.windowMode;
+        // debug: console.log(`📋 windowMode: ${windowMode}`);
+    } catch (e) {
+        console.log('⚠️ settings.json読み取り失敗:', e.message);
     }
-    await ipcWindow.createChatWindow();
+
+    if (windowMode === 'docked') {
+        // Dockedモード: キャラ+チャットを1ウィンドウに統合
+        await ipcWindow.createDockedWindow();
+    } else {
+        // Desktopモード（デフォルト）: 分離ウィンドウ
+        if (showCharWindow) {
+            await ipcWindow.createCharacterWindow();
+        }
+        await ipcWindow.createChatWindow();
+    }
     ipcWindow.createTray();
 
     // 初回セットアップチェック
     setTimeout(async () => {
-        if (chatWindow) {
+        // dockedモードではdockedWindowがチャットUIを含む
+        const setupTargetWindow = dockedWindow || chatWindow;
+        if (setupTargetWindow) {
             const state = await loadStateCached();
             if (!state.setupComplete) {
                 try {
@@ -786,8 +801,8 @@ app.whenReady().then(async () => {
                     // ファイルが無い → 本当に初回
                 }
                 console.log('🎉 初回セットアップ開始');
-                chatWindow.show();
-                chatWindow.webContents.send('start-setup');
+                setupTargetWindow.show();
+                setupTargetWindow.webContents.send('start-setup');
             }
         }
     }, 1000);

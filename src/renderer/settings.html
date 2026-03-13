@@ -151,8 +151,8 @@
 
     /* ========== Sidebar ========== */
     .sidebar {
-      width: 180px;
-      min-width: 180px;
+      width: 140px;
+      min-width: 140px;
       background: var(--bg-sidebar);
       border-right: 1px solid var(--border);
       display: flex;
@@ -1252,6 +1252,42 @@
       font-size: 11px;
       padding: 3px 8px;
     }
+
+    /* ========== Responsive: narrow sidebar ========== */
+    @media (max-width: 600px) {
+      .sidebar {
+        width: 48px;
+        min-width: 48px;
+        padding: 12px 0;
+      }
+      .sidebar-title {
+        display: none;
+      }
+      .sidebar-nav {
+        padding: 0 4px;
+      }
+      .sidebar-btn {
+        justify-content: center;
+        padding: 10px 0;
+        border-left: none;
+        border-bottom: 3px solid transparent;
+        gap: 0;
+      }
+      .sidebar-btn.active {
+        border-left-color: transparent;
+        border-bottom-color: var(--sidebar-active-border);
+      }
+      .sidebar-btn > span:not(.sidebar-icon) {
+        display: none;
+      }
+      .sidebar-icon {
+        width: 24px;
+        height: 24px;
+      }
+      .content {
+        padding: 16px 12px;
+      }
+    }
   </style>
 </head>
 
@@ -1442,6 +1478,14 @@
               <option value="ja" data-i18n="settings.general.language.ja">日本語</option>
               <option value="en" data-i18n="settings.general.language.en">English</option>
             </select>
+          </div>
+          <div class="form-group">
+            <label for="window-mode" data-i18n="settings.general.windowMode.label">ウィンドウモード</label>
+            <select id="window-mode">
+              <option value="desktop" data-i18n="settings.general.windowMode.desktop">デスクトップ（分離）</option>
+              <option value="docked" data-i18n="settings.general.windowMode.docked">ドッキング（統合）</option>
+            </select>
+            <div class="hint" data-i18n="settings.general.windowMode.hint">ドッキングモードではキャラとチャットを1ウィンドウに統合します</div>
           </div>
         </div>
 
@@ -2438,6 +2482,14 @@
             </label>
             <div class="hint" data-i18n="settings.character.lipsync.disableMouthFormHint">一部のLive2Dモデルで口の形変化が眉毛の動きに影響する場合にONにしてください</div>
           </div>
+          <div class="form-group">
+            <label data-i18n="settings.character.lipsync.scale">口の開き量</label>
+            <div class="slider-with-num">
+              <input type="range" id="lipsync-scale" min="0" max="2" step="0.1" value="1.0">
+              <input type="number" id="lipsync-scale-num" min="0" max="2" step="0.1" value="1.0" class="num-input">
+            </div>
+            <div class="hint" data-i18n="settings.character.lipsync.scaleHint">リップシンクの開口量スケール（0=閉じたまま、1=通常、2=大きく開く）</div>
+          </div>
         </div>
 
         <div class="section">
@@ -2548,20 +2600,6 @@
                 <input type="range" id="model-y" value="0.5" min="-0.5" max="1.5" step="0.01">
                 <input type="number" id="model-y-num" class="range-num" value="0.5" min="-0.5" max="1.5" step="0.01">
               </div>
-            </div>
-
-            <div class="form-group">
-              <label for="resolution" data-i18n="settings.character.display.resolution">解像度</label>
-              <input type="range" id="resolution" value="2" min="1" max="4" step="0.5">
-              <input type="number" id="resolution-num" class="range-num" value="2" min="1" max="4" step="0.5">
-              <div class="hint" data-i18n="settings.character.display.resolutionHint">1=通常、2=高画質（推奨）、3-4=超高画質（変更時は再起動が必要）</div>
-            </div>
-
-            <div class="form-group">
-              <label for="fps" data-i18n="settings.character.display.fps">FPS上限</label>
-              <input type="range" id="fps" value="30" min="10" max="60" step="5">
-              <input type="number" id="fps-num" class="range-num" value="30" min="10" max="60" step="5">
-              <div class="hint" data-i18n="settings.character.display.fpsHint">低いほどCPU負荷が減る（15=省エネ、30=推奨、60=滑らか）</div>
             </div>
 
             <!-- アンカーは0.5固定（非表示） -->
@@ -2680,6 +2718,21 @@
               <input type="number" id="vrm-model-y-num" class="range-num" value="0" min="-1" max="1" step="0.01">
               <div class="hint" data-i18n="settings.character.vrm.modelYHint">上下のオフセット（-1:下 〜 1:上）</div>
             </div>
+          </div>
+
+          <!-- 共通: 解像度・FPS（Live2D/VRM両方で使用） -->
+          <div class="form-group">
+            <label for="resolution" data-i18n="settings.character.display.resolution">解像度</label>
+            <input type="range" id="resolution" value="2" min="1" max="4" step="0.5">
+            <input type="number" id="resolution-num" class="range-num" value="2" min="1" max="4" step="0.5">
+            <div class="hint" data-i18n="settings.character.display.resolutionHint">1=通常、2=高画質（推奨）、3-4=超高画質（変更時は再起動が必要）</div>
+          </div>
+
+          <div class="form-group">
+            <label for="fps" data-i18n="settings.character.display.fps">FPS上限</label>
+            <input type="range" id="fps" value="30" min="10" max="60" step="5">
+            <input type="number" id="fps-num" class="range-num" value="30" min="10" max="60" step="5">
+            <div class="hint" data-i18n="settings.character.display.fpsHint">低いほどCPU負荷が減る（15=省エネ、30=推奨、60=滑らか）</div>
           </div>
         </div>
 

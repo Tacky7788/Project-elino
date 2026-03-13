@@ -3,8 +3,14 @@
 
 import type { ElectronAPI } from './types';
 
+function getElectronAPI(): any {
+  if (typeof window === 'undefined') return null;
+  // iframe内ではpreloadが適用されないので親ウィンドウから取得
+  return (window as any).electronAPI || (window.parent as any)?.electronAPI || null;
+}
+
 function detectEnvironment(): 'electron' | 'web' {
-  return typeof window !== 'undefined' && (window as any).electronAPI ? 'electron' : 'web';
+  return getElectronAPI() ? 'electron' : 'web';
 }
 
 let _platform: ElectronAPI | null = null;
@@ -28,9 +34,10 @@ export async function initPlatform(): Promise<ElectronAPI> {
 // 同期アクセス用（initPlatform後に使う）
 export function getPlatform(): ElectronAPI {
   if (!_platform) {
-    // Electron環境なら即座に取得可能
-    if (detectEnvironment() === 'electron') {
-      _platform = (window as any).electronAPI;
+    // Electron環境なら即座に取得可能（iframe内ではparentから取得）
+    const api = getElectronAPI();
+    if (api) {
+      _platform = api;
       return _platform!;
     }
     throw new Error('Platform not initialized. Call initPlatform() first.');

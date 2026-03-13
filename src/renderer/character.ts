@@ -46,6 +46,75 @@ async function createRenderer(modelType: string): Promise<CharacterRenderer> {
   }
 }
 
+// --- キャラ部分だけドラッグ可能にするヒットテスト ---
+let isOverCharacter = false;
+let windowDragging = false;
+let lastScreenX = 0;
+let lastScreenY = 0;
+
+function checkPixelAlpha(x: number, y: number): boolean {
+  try {
+    const gl = canvas.getContext('webgl2') || canvas.getContext('webgl');
+    if (!gl) return true;
+    const pixel = new Uint8Array(4);
+    const glY = gl.drawingBufferHeight - Math.round(y * (gl.drawingBufferHeight / canvas.clientHeight));
+    const glX = Math.round(x * (gl.drawingBufferWidth / canvas.clientWidth));
+    gl.readPixels(glX, glY, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel);
+    return pixel[3] > 10;
+  } catch {
+    return true;
+  }
+}
+
+function updateHitTest(x: number, y: number): void {
+  const api = (window as any).electronAPI;
+  if (!api?.setIgnoreMouseEvents) return;
+
+  const hit = checkPixelAlpha(x, y);
+  if (hit !== isOverCharacter) {
+    isOverCharacter = hit;
+    if (hit) {
+      api.setIgnoreMouseEvents(false);
+    } else {
+      api.setIgnoreMouseEvents(true, { forward: true });
+    }
+  }
+}
+
+// mousemove: ヒットテスト + ウィンドウドラッグ + ドラッグ開始判定を統合
+document.addEventListener('mousemove', (e) => {
+  if (windowDragging) {
+    // ウィンドウドラッグ中 → screenX/Yの差分でウィンドウを移動
+    const api = (window as any).electronAPI;
+    const dx = e.screenX - lastScreenX;
+    const dy = e.screenY - lastScreenY;
+    lastScreenX = e.screenX;
+    lastScreenY = e.screenY;
+    if (api?.moveWindowBy && (dx !== 0 || dy !== 0)) {
+      api.moveWindowBy(dx, dy);
+    }
+    return;
+  }
+
+  // ドラッグ開始判定（mousedown後、5px以上移動でドラッグ開始）
+  if (clickStartTime > 0 && isOverCharacter && !windowDragging) {
+    const moveDistance = Math.sqrt(
+      Math.pow(e.clientX - clickStartPos.x, 2) +
+      Math.pow(e.clientY - clickStartPos.y, 2)
+    );
+    if (moveDistance > 5) {
+      windowDragging = true;
+      lastScreenX = e.screenX;
+      lastScreenY = e.screenY;
+      canvas.style.cursor = 'grabbing';
+      return;
+    }
+  }
+
+  // ヒットテスト
+  updateHitTest(e.clientX, e.clientY);
+});
+
 // --- canvasイベントリスナー登録（canvas再作成時にも再登録可能）---
 function setupCanvasListeners(): void {
   canvas.addEventListener('mousedown', (e) => {
@@ -56,6 +125,12 @@ function setupCanvasListeners(): void {
     isDragging = false;
     dragStartX = e.clientX;
     dragStartY = e.clientY;
+
+    // ウィンドウドラッグ開始（キャラ上のみ）
+    if (isOverCharacter) {
+      lastScreenX = e.screenX;
+      lastScreenY = e.screenY;
+    }
 
     // Live2Dレンダラーの場合のみモデル位置を取得
     const live2d = renderer as any;
@@ -94,8 +169,8 @@ async function initCharacter() {
 
     // IPCリスナー登録
     if (platform?.onLipSync) {
-      platform.onLipSync((value: number) => {
-        renderer?.setMouthOpen(value);
+      platform.onLipSync((value: number, form?: number) => {
+        renderer?.setMouthOpen(value, form);
       });
       console.log('✅ LipSync IPC: リップシンク受信を登録');
     }
@@ -201,52 +276,14 @@ async function initCharacter() {
   }
 }
 
-// --- ドラッグ&ドロップ＋クリック処理（documentレベル）---
-document.addEventListener('mousemove', (e) => {
-  if (!renderer) return;
-  const moveDistance = Math.sqrt(
-    Math.pow(e.clientX - clickStartPos.x, 2) +
-    Math.pow(e.clientY - clickStartPos.y, 2)
-  );
-
-  if (moveDistance > 5 && !isDragging) {
-    isDragging = true;
-    canvas.style.cursor = 'grabbing';
-  }
-
-  if (isDragging) {
-    const dx = e.clientX - dragStartX;
-    const dy = e.clientY - dragStartY;
-
-    // Live2Dレンダラーの場合のみドラッグ移動
-    const live2d = renderer as any;
-    if (typeof live2d.setModelPosition === 'function') {
-      live2d.setModelPosition(modelStartX + dx, modelStartY + dy);
-    }
-  }
-});
-
-document.addEventListener('mouseup', async (e) => {
+// --- ドラッグ＋クリック処理（documentレベル）---
+document.addEventListener('mouseup', async () => {
   const clickDuration = Date.now() - clickStartTime;
 
-  if (isDragging && renderer && characterSettings) {
-    isDragging = false;
+  if (windowDragging) {
+    windowDragging = false;
     canvas.style.cursor = 'pointer';
-
-    // Live2Dの場合のみ位置を記録
-    const live2d = renderer as any;
-    if (typeof live2d.getModelPosition === 'function' && typeof live2d.getViewSize === 'function') {
-      const pos = live2d.getModelPosition();
-      const viewSize = live2d.getViewSize();
-      if (pos && viewSize) {
-        const newX = pos.x / viewSize.width;
-        const newY = pos.y / viewSize.height;
-        characterSettings.model.x = newX;
-        characterSettings.model.y = newY;
-        console.log(`📍 位置変更: x=${newX.toFixed(2)}, y=${newY.toFixed(2)} (設定画面で「保存」すると永続化されます)`);
-      }
-    }
-  } else if (clickDuration < 300) {
+  } else if (clickDuration < 300 && isOverCharacter) {
     // 短いクリック：チャット開閉
     await platform.toggleChat();
 
@@ -256,8 +293,10 @@ document.addEventListener('mouseup', async (e) => {
   }
 
   isDragging = false;
+  clickStartTime = 0;
   canvas.style.cursor = 'pointer';
 });
+
 
 // --- canvas mousedownリスナー初期登録 ---
 setupCanvasListeners();

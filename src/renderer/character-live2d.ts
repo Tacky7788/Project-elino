@@ -163,7 +163,8 @@ export class Live2DRenderer implements CharacterRenderer {
       backgroundAlpha: 0,
       autoDensity: true,
       resolution: settings.resolution || 2,
-    });
+      preserveDrawingBuffer: true,
+    } as any);
 
 
     // Live2Dモデル読み込み
@@ -302,25 +303,16 @@ export class Live2DRenderer implements CharacterRenderer {
         return;
       }
 
-      // === 値をoriginalUpdateの前に適用 ===
-      // originalUpdate内部: saveParameters → physics.evaluate → coreModel.update → loadParameters
-      // 前に適用した値がphysicsの入力になり、coreModel.updateで物理込みで描画される
-
-      // 口パク（スムージング）— LipSync グループのパラメータを動的適用
-      self.mouthOpenSmoothed += (self.currentMouthOpenY - self.mouthOpenSmoothed) * 0.35;
-      for (const id of self.lipSyncParamIds) {
-        const idx = coreModel.getParameterIndex(id);
-        if (idx >= 0) coreModel.setParameterValueByIndex(idx, self.mouthOpenSmoothed, 1.0);
-      }
-      // ParamMouthOpen (LipSync非登録だが存在する場合) もフォールバック
-      if (self.paramCache.mouthOpen >= 0) coreModel.setParameterValueByIndex(self.paramCache.mouthOpen, self.mouthOpenSmoothed, 1.0);
-      // ParamMouthForm は多くのモデルで共通
-      if (self.paramCache.mouthForm >= 0) coreModel.setParameterValueByIndex(self.paramCache.mouthForm, self.currentMouthForm, 1.0);
-
-      // --- プロシージャル全体ゲート（falseならリップシンクのみ）---
+      // === プロシージャル全体ゲート ===
       if (!self.proceduralEnabled) {
-        // originalUpdateが物理演算 + 描画を全部やる
+        // originalUpdate内のcoreModel.update()を一時無効化
+        // → モーションがパラメータを書く → リップシンクで口だけ上書き → 手動でcommit
+        const origCoreUpdate = coreModel.update?.bind(coreModel);
+        if (origCoreUpdate) coreModel.update = () => {};
         originalUpdate.call(this, dt, now);
+        if (origCoreUpdate) coreModel.update = origCoreUpdate;
+        self.applyLipSync(coreModel);
+        coreModel.update?.();
         return;
       }
 
@@ -588,8 +580,14 @@ export class Live2DRenderer implements CharacterRenderer {
         if (self.paramCache.angleY >= 0) coreModel.addParameterValueByIndex(self.paramCache.angleY, nodVal, 1.0);
       }
 
-      // originalUpdateが物理演算 + 描画を全部やる（saveParams→physics→coreModel.update→loadParams）
+      // originalUpdate内のcoreModel.update()を一時無効化
+      // → モーション+物理がパラメータを書く → リップシンクで口だけ上書き → 手動でcommit
+      const origCoreUpdate = coreModel.update?.bind(coreModel);
+      if (origCoreUpdate) coreModel.update = () => {};
       originalUpdate.call(this, dt, now);
+      if (origCoreUpdate) coreModel.update = origCoreUpdate;
+      self.applyLipSync(coreModel);
+      coreModel.update?.();
     };
 
     // 3. expressionManager・focusController・eyeBlink は無効化（手動制御）
@@ -1083,8 +1081,42 @@ export class Live2DRenderer implements CharacterRenderer {
     return { cleanText, expression };
   }
 
+  /**
+   * originalUpdate の後にリップシンクパラメータを上書き適用する。
+   * モーション（ひよりのIdleなど）が口パラメータを上書きするため、
+   * originalUpdate の後に呼ぶことで確実にリップシンクが反映される。
+   */
+  private applyLipSync(coreModel: any): void {
+    // スムージング（急な変化を抑える）
+    const smoothFactor = 0.35;
+    this.mouthOpenSmoothed += (this.currentMouthOpenY - this.mouthOpenSmoothed) * smoothFactor;
+    this.mouthFormSmoothed += (this.currentMouthForm - this.mouthFormSmoothed) * smoothFactor;
+
+    const openVal = this.mouthOpenSmoothed;
+    const formVal = this.mouthFormSmoothed;
+
+    // lipSyncParamIds（model3.json Groups から取得した動的パラメータ）
+    for (const id of this.lipSyncParamIds) {
+      const idx = coreModel.getParameterIndex(id);
+      if (idx >= 0) {
+        coreModel.setParameterValueByIndex(idx, openVal, 1.0);
+      }
+    }
+
+    // ParamMouthOpen（ParamMouthOpenYとは別パラメータのモデルもある）
+    if (this.paramCache.mouthOpen >= 0) {
+      coreModel.setParameterValueByIndex(this.paramCache.mouthOpen, openVal, 1.0);
+    }
+
+    // ParamMouthForm
+    if (this.paramCache.mouthForm >= 0) {
+      coreModel.setParameterValueByIndex(this.paramCache.mouthForm, formVal, 1.0);
+    }
+  }
+
   setMouthOpen(openY: number, form?: number): void {
-    this.currentMouthOpenY = openY;
+    const scale = this.settings?.lipSyncScale ?? 1.0;
+    this.currentMouthOpenY = Math.min(openY * scale, 1.0);
     if (form !== undefined) {
       this.currentMouthForm = form;
     }
@@ -1538,6 +1570,12 @@ export class Live2DRenderer implements CharacterRenderer {
   // motion3.json プレイヤーへのアクセサ（外部連携用）
   getMotionPlayer(): MotionPlayer {
     return this.motionPlayer;
+  }
+
+  resize(width: number, height: number): void {
+    if (!this.app || !this.model) return;
+    this.app.renderer.resize(width, height);
+    this.applyAutoFit(width, height);
   }
 
   destroy(): void {

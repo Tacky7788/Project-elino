@@ -258,6 +258,7 @@ export interface CharacterSettings {
   physicsEnabled?: boolean;
   disableMouthForm?: boolean;  // ParamMouthForm無効化（一部モデルで眉毛連動を防ぐ）
   emotionMap?: Record<string, EmotionMapEntry>;
+  lipSyncScale?: number;  // リップシンク開口量スケール（0.0〜2.0, デフォルト1.0）
   vrm?: {
     cameraDistance: number;
     cameraHeight: number;
@@ -284,6 +285,8 @@ export interface CharacterRenderer {
   reload(settings: CharacterSettings): Promise<void>;
   updateTransform(settings: CharacterSettings): void;
   destroy(): void;
+  // リサイズ（ドッキングモード用）
+  resize?(width: number, height: number): void;
   // モデルインスタンス取得（オプション）
   getModel?(): any;
   // モーション状態制御（オプション）
@@ -434,6 +437,7 @@ export interface Settings {
     expressionMap: Record<string, string>;
     audioDeviceId?: string;
   };
+  windowMode?: 'desktop' | 'docked';
 }
 
 export interface HistoryRecord {
@@ -470,6 +474,16 @@ export interface ElectronAPI {
   // Settings
   getSettings: () => Promise<Settings>;
   saveSettings: (settings: Settings) => Promise<void>;
+  // VRChat Log
+  appendVrchatLog: (record: {
+    ts: string;
+    source: 'vrchat';
+    role: 'user' | 'assistant';
+    speaker: string;
+    text: string;
+    rawText?: string;
+    sessionId?: string;
+  }) => Promise<void>;
   // History
   appendHistory: (record: HistoryRecord) => Promise<void>;
   getHistory: (limit?: number) => Promise<HistoryRecord[]>;
@@ -660,6 +674,9 @@ export interface ElectronAPI {
   // VRChat overlay window
   vrchatOpenOverlay?: () => Promise<void>;
   vrchatCloseOverlay?: () => Promise<void>;
+  // Docked window controls
+  minimizeWindow?: () => Promise<void>;
+  hideWindow?: () => Promise<void>;
 }
 
 declare global {

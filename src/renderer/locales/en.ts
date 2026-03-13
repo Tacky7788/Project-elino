@@ -77,6 +77,11 @@ export const en: Record<string, string> = {
   'settings.general.theme.system': 'System (Auto)',
   'settings.general.theme.light': 'Light',
   'settings.general.theme.dark': 'Dark',
+  'settings.general.windowMode.label': 'Window Mode',
+  'settings.general.windowMode.desktop': 'Desktop (Separated)',
+  'settings.general.windowMode.docked': 'Docked (Combined)',
+  'settings.general.windowMode.hint': 'Docked mode combines character and chat into a single window',
+  'settings.general.windowMode.restartMsg': 'Changing window mode requires a restart. Restart now?',
 
   'settings.general.language.label': 'Language / 言語',
   'settings.general.language.ja': '日本語',
@@ -391,6 +396,8 @@ export const en: Record<string, string> = {
   'settings.character.lipsync.hint': 'Phoneme analysis is accurate with VOICEVOX, uses estimation for Web Speech',
   'settings.character.lipsync.disableMouthForm': 'Disable mouth shape variation',
   'settings.character.lipsync.disableMouthFormHint': 'Enable this if mouth shape changes cause eyebrow movement on your Live2D model',
+  'settings.character.lipsync.scale': 'Mouth open amount',
+  'settings.character.lipsync.scaleHint': 'Lip sync scale (0=closed, 1=normal, 2=wide open)',
 
   'settings.character.preset.section': 'Model Presets',
   'settings.character.preset.label': 'Saved presets',
@@ -407,6 +414,10 @@ export const en: Record<string, string> = {
   'settings.character.display.section': 'Display',
   'settings.character.display.hint': 'Moving sliders will show a real-time preview',
   'settings.character.display.showWindow': 'Show character on desktop',
+  'settings.character.display.windowMode': 'Window mode',
+  'settings.character.display.windowModeDesktop': 'Desktop (separate)',
+  'settings.character.display.windowModeDocked': 'Docked (unified)',
+  'settings.character.display.windowModeHint': 'Change takes effect after restart',
   'settings.character.display.modelType': 'Model type',
   'settings.character.display.winWidth': 'Window width',
   'settings.character.display.winHeight': 'Window height',
@@ -709,6 +720,7 @@ export const en: Record<string, string> = {
   'settings.footer.reason.sttEngine': 'STT engine',
   'settings.footer.reason.ttsEngine': 'TTS engine',
   'settings.footer.reason.modelType': 'Model type',
+  'settings.footer.reason.windowMode': 'Window mode',
 
   // ===== Chat App (index.html + app.ts) =====
   'app.settings.title': 'Settings',

@@ -40,6 +40,8 @@ let historyTurnsVal: HTMLSpanElement;
 let proactiveFreqSlider: HTMLInputElement;
 let proactiveFreqVal: HTMLSpanElement;
 let proactiveFreqHint: HTMLDivElement;
+let windowModeSelect: HTMLSelectElement;
+export let originalWindowMode = 'desktop';
 
 const PROACTIVE_LEVELS = [
   { label: 'settings.general.proactive.level0', hint: 'settings.general.proactive.level0hint' },
@@ -95,6 +97,13 @@ export async function initTab(settings: Settings): Promise<void> {
   proactiveFreqSlider = document.getElementById('persona-proactive-freq') as HTMLInputElement;
   proactiveFreqVal = document.getElementById('persona-proactive-freq-val') as HTMLSpanElement;
   proactiveFreqHint = document.getElementById('persona-proactive-freq-hint') as HTMLDivElement;
+
+  // ---- Window Mode ----
+  windowModeSelect = document.getElementById('window-mode') as HTMLSelectElement;
+  if (windowModeSelect) {
+    windowModeSelect.value = settings.windowMode || 'desktop';
+    originalWindowMode = windowModeSelect.value;
+  }
 
   // ---- Theme ----
   const theme = settings.theme ?? 'system';
@@ -275,6 +284,9 @@ export async function initTab(settings: Settings): Promise<void> {
 
 export function collectSettings(settings: Settings): void {
   settings.theme = themeSelect.value as 'light' | 'dark' | 'system';
+  if (windowModeSelect) {
+    settings.windowMode = windowModeSelect.value as 'desktop' | 'docked';
+  }
 
   if (settings.proactive) {
     settings.proactive.enabled = proactiveEnabledInput.checked;

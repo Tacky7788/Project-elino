@@ -117,10 +117,12 @@ async function saveSettings() {
     const { resolution: newResolution, modelType: newModelType } = tabCharacter.getRestartValues();
     const newSttEngine = tabExtras.getSttEngine();
     const newTtsEngine = tabTts.getTtsEngine();
+    const newWindowMode = (document.getElementById('window-mode') as HTMLSelectElement)?.value || 'desktop';
     const needsRestart = newResolution !== tabCharacter.originalResolution
       || newSttEngine !== tabExtras.originalSttEngine
       || newTtsEngine !== tabTts.originalTtsEngine
-      || newModelType !== tabCharacter.originalModelType;
+      || newModelType !== tabCharacter.originalModelType
+      || newWindowMode !== tabGeneral.originalWindowMode;
 
     if (needsRestart) {
       const reasons = [];
@@ -128,6 +130,7 @@ async function saveSettings() {
       if (newSttEngine !== tabExtras.originalSttEngine) reasons.push(t('settings.footer.reason.sttEngine'));
       if (newTtsEngine !== tabTts.originalTtsEngine) reasons.push(t('settings.footer.reason.ttsEngine'));
       if (newModelType !== tabCharacter.originalModelType) reasons.push(t('settings.footer.reason.modelType'));
+      if (newWindowMode !== tabGeneral.originalWindowMode) reasons.push(t('settings.footer.reason.windowMode'));
       const shouldRestart = await modalConfirm(t('settings.footer.restartNeeded', { reasons: reasons.join('・') }));
       if (shouldRestart) {
         await platform.restartApp();
@@ -148,6 +151,11 @@ async function saveSettings() {
     // Save button success feedback
     saveBtn.classList.add('save-success');
     setTimeout(() => saveBtn.classList.remove('save-success'), 2000);
+
+    // ドッキングモードのiframe内なら保存後にチャットに戻る
+    if (window.parent !== window && (window.parent as any).__dockedCloseSettings) {
+      setTimeout(() => (window.parent as any).__dockedCloseSettings(), 800);
+    }
   } catch (err) {
     console.error('❌ 保存失敗:', err);
     showStatus(t('settings.footer.saveFailed'), 'error');
@@ -193,7 +201,14 @@ async function init() {
 
     // ---- Footer ----
     saveBtn.addEventListener('click', saveSettings);
-    cancelBtn.addEventListener('click', () => platform.closeSettingsWindow());
+    cancelBtn.addEventListener('click', () => {
+      // ドッキングモードのiframe内なら親ウィンドウのハンドラでチャットに戻す
+      if (window.parent !== window && (window.parent as any).__dockedCloseSettings) {
+        (window.parent as any).__dockedCloseSettings();
+      } else {
+        platform.closeSettingsWindow();
+      }
+    });
     resetBtn.addEventListener('click', async () => {
       if (!await modalConfirm(t('settings.footer.resetConfirm'))) return;
       await tabCharacter.resetToDefaults();

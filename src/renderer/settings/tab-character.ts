@@ -30,6 +30,8 @@ let browseBtn: HTMLButtonElement;
 let lipsyncEnabledInput: HTMLInputElement;
 let lipsyncModeSelect: HTMLSelectElement;
 let lipsyncDisableMouthFormInput: HTMLInputElement;
+let lipsyncScaleInput: HTMLInputElement;
+let lipsyncScaleNumInput: HTMLInputElement;
 let showCharacterWindowInput: HTMLInputElement;
 let modelTypeSelect: HTMLSelectElement;
 let live2dModelSettings: HTMLDivElement;
@@ -142,8 +144,11 @@ function updateModelTypeVisibility() {
   }
   // Auto-switch model path to default for the selected type
   const currentPath = modelPathInput.value;
+  const isWrongExt = isLive2D
+    ? currentPath.endsWith('.vrm')
+    : currentPath.endsWith('.model3.json') || currentPath.endsWith('.moc3');
   const otherDefault = isLive2D ? DEFAULT_MODEL_PATHS.vrm : DEFAULT_MODEL_PATHS.live2d;
-  if (!currentPath || currentPath === otherDefault) {
+  if (!currentPath || currentPath === otherDefault || isWrongExt) {
     modelPathInput.value = isLive2D ? DEFAULT_MODEL_PATHS.live2d : DEFAULT_MODEL_PATHS.vrm;
   }
 }
@@ -751,7 +756,7 @@ function onDragPadWheel(e: WheelEvent) {
       setSliderAndNum('model-scale', 'model-scale-num', clamp(current + delta * 0.01, 0.05, 1).toFixed(2));
     } else {
       const current = parseFloat(vrmCameraDistanceInput.value) || 1.5;
-      setSliderAndNum('vrm-camera-distance', 'vrm-camera-distance-num', clamp(current + delta * 0.1, 0.5, 5).toFixed(1));
+      setSliderAndNum('vrm-camera-distance', 'vrm-camera-distance-num', clamp(current - delta * 0.1, 0.5, 5).toFixed(1));
     }
   } else {
     if (isLive2D) {
@@ -759,7 +764,7 @@ function onDragPadWheel(e: WheelEvent) {
       setSliderAndNum('model-scale', 'model-scale-num', clamp(current + delta * 0.01, 0.05, 1).toFixed(2));
     } else {
       const current = parseFloat(vrmCameraDistanceInput.value) || 1.5;
-      setSliderAndNum('vrm-camera-distance', 'vrm-camera-distance-num', clamp(current + delta * 0.1, 0.5, 5).toFixed(1));
+      setSliderAndNum('vrm-camera-distance', 'vrm-camera-distance-num', clamp(current - delta * 0.1, 0.5, 5).toFixed(1));
     }
   }
 
@@ -961,6 +966,8 @@ export async function initTab(settings: Settings): Promise<void> {
   lipsyncEnabledInput = document.getElementById('lipsync-enabled') as HTMLInputElement;
   lipsyncModeSelect = document.getElementById('lipsync-mode') as HTMLSelectElement;
   lipsyncDisableMouthFormInput = document.getElementById('lipsync-disable-mouth-form') as HTMLInputElement;
+  lipsyncScaleInput = document.getElementById('lipsync-scale') as HTMLInputElement;
+  lipsyncScaleNumInput = document.getElementById('lipsync-scale-num') as HTMLInputElement;
   showCharacterWindowInput = document.getElementById('show-character-window') as HTMLInputElement;
   modelTypeSelect = document.getElementById('model-type') as HTMLSelectElement;
   live2dModelSettings = document.getElementById('live2d-model-settings') as HTMLDivElement;
@@ -1057,6 +1064,8 @@ export async function initTab(settings: Settings): Promise<void> {
   lipsyncEnabledInput.checked = settings.lipSync?.enabled ?? true;
   lipsyncModeSelect.value = settings.lipSync?.mode ?? 'simple';
   lipsyncDisableMouthFormInput.checked = char.disableMouthForm ?? false;
+  lipsyncScaleInput.value = String(char.lipSyncScale ?? 1.0);
+  lipsyncScaleNumInput.value = String(char.lipSyncScale ?? 1.0);
   physicsEnabledInput.checked = char.physicsEnabled !== false;
 
   // Motion test buttons
@@ -1084,6 +1093,7 @@ export async function initTab(settings: Settings): Promise<void> {
   syncSliders('model-y', 'model-y-num', schedulePreview);
   syncSliders('resolution', 'resolution-num');
   syncSliders('fps', 'fps-num', schedulePreview);
+  syncSliders('lipsync-scale', 'lipsync-scale-num');
   syncSliders('vrm-camera-distance', 'vrm-camera-distance-num', schedulePreview);
   syncSliders('vrm-camera-height', 'vrm-camera-height-num', schedulePreview);
   syncSliders('vrm-light-intensity', 'vrm-light-intensity-num', schedulePreview);
@@ -1155,6 +1165,7 @@ export async function collectSettings(settings: Settings): Promise<void> {
     modelType: modelTypeSelect.value as 'live2d' | 'vrm',
     physicsEnabled: physicsEnabledInput.checked,
     disableMouthForm: lipsyncDisableMouthFormInput.checked,
+    lipSyncScale: parseFloat(lipsyncScaleNumInput.value || lipsyncScaleInput.value) || 1.0,
     vrm: {
       cameraDistance: parseFloat(vrmCameraDistanceNumInput.value) || 1.5,
       cameraHeight: parseFloat(vrmCameraHeightNumInput.value) || 1.3,
@@ -1170,6 +1181,8 @@ export async function collectSettings(settings: Settings): Promise<void> {
     enabled: lipsyncEnabledInput.checked,
     mode: lipsyncModeSelect.value as 'simple' | 'amplitude' | 'phoneme'
   };
+
+  // Window mode (desktop / docked) — restart required on change
 }
 
 /** Get resolution/modelType for restart check */

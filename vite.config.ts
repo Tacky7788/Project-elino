@@ -17,7 +17,8 @@ export default defineConfig({
         main: path.resolve(__dirname, 'src/renderer/index.html'),
         character: path.resolve(__dirname, 'src/renderer/character.html'),
         settings: path.resolve(__dirname, 'src/renderer/settings.html'),
-        'vr-overlay': path.resolve(__dirname, 'src/renderer/vr-overlay.html')
+        'vr-overlay': path.resolve(__dirname, 'src/renderer/vr-overlay.html'),
+        docked: path.resolve(__dirname, 'src/renderer/docked.html')
       }
     }
   },

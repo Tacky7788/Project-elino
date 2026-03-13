@@ -46,6 +46,7 @@
     "@pixi/sprite": "^7.4.3",
     "@pixiv/three-vrm": "^3.4.5",
     "ai": "^6.0.79",
+    "application-loopback": "^1.2.7",
     "electron-store": "^8.2.0",
     "google-auth-library": "^10.5.0",
     "minisearch": "^7.2.0",

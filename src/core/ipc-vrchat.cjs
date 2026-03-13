@@ -1,6 +1,7 @@
 'use strict';
 
 const oscClient = require('./osc-client.cjs');
+const vrchatListener = require('./vrchat-listener.cjs');
 const path = require('path');
 const fs = require('fs');
 const https = require('https');
@@ -154,6 +155,51 @@ function register(ipcMain, ctx) {
             oscClient.disconnect();
         }
         return { success: result };
+    });
+
+    // VRChat音声リスナー開始
+    ipcMain.handle('vrchat:start-listener', async () => {
+        try {
+            const settings = ctx.getSettingsCache() || await ctx.loadSettings();
+            const config = await ctx.loadConfig();
+            const result = await vrchatListener.start({
+                getSettings: () => ctx.getSettingsCache() || settings,
+                getConfig: () => config,
+                onTranscript: (text) => {
+                    console.log(`[VRChat音声] ${text}`);
+                    const chatWindow = ctx.chatWindow;
+                    if (chatWindow && !chatWindow.isDestroyed()) {
+                        chatWindow.webContents.send('vrchat-listener-transcript', text);
+                    }
+                },
+                onStateChange: (state) => {
+                    const chatWindow = ctx.chatWindow;
+                    if (chatWindow && !chatWindow.isDestroyed()) {
+                        chatWindow.webContents.send('vrchat-listener-state', state);
+                    }
+                }
+            });
+            return result;
+        } catch (err) {
+            console.error('[VRChat音声リスナー] 開始失敗:', err);
+            return { success: false, error: err.message };
+        }
+    });
+
+    // VRChat音声リスナー停止
+    ipcMain.handle('vrchat:stop-listener', () => {
+        return vrchatListener.stop();
+    });
+
+    // VRChat音声リスナー状態
+    ipcMain.handle('vrchat:listener-status', () => {
+        return vrchatListener.getStatus();
+    });
+
+    // VRChatプロセス検出
+    ipcMain.handle('vrchat:find-process', async () => {
+        const pid = await vrchatListener.findVRChatPid();
+        return { found: !!pid, pid };
     });
 
     // VB-CABLEインストール

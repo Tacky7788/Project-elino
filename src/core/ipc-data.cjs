@@ -431,6 +431,17 @@ function register(ipcMain, ctx) {
         return path.join(__dirname, '..', '..', 'public', 'live2d');
     });
 
+    // ====== VRChat Log IPC ======
+
+    ipcMain.handle('append-vrchat-log', async (event, record) => {
+        await ensureCompanionDir();
+        const filePaths = getFilePaths();
+        // スロットディレクトリにvrchat-log.jsonlを保存
+        const logFile = path.join(path.dirname(filePaths.HISTORY_FILE), 'vrchat-log.jsonl');
+        const line = JSON.stringify(record) + '\n';
+        await fs.appendFile(logFile, line, 'utf-8');
+    });
+
     // ====== History IPC ======
 
     ipcMain.handle('append-history', async (event, record) => {
